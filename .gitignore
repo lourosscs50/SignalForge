@@ -1,0 +1,20 @@
+# Build artifacts
+bin/
+obj/
+
+# User files
+*.user
+*.suo
+*.userprefs
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Env
+.env
