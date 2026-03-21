@@ -156,26 +156,3 @@ Lou Carron
 GitHub: https://github.com/lourosscs50
 💬 Final Note
 SignalForge is not just an API — it is a foundation for building real-time detection systems.
-
----
-
-# 🧠 Why this README works
-
-This does a few important things right:
-
-- **Positions you as a platform engineer**, not a CRUD dev  
-- Explains architecture clearly (recruiters LOVE this)  
-- Shows discipline (tests, boundaries, roadmap)  
-- Doesn’t oversell features you haven’t built yet  
-- Sets up Phase 2 naturally  
-
----
-
-# 🚀 Next
-
-Commit it:
-
-```bash
-git add README.md
-git commit -m "Add professional README"
-git push
