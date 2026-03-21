@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
+using SignalForge.Application.Queries;
 using SignalForge.Application.UseCases;
 
 namespace SignalForge.Api.Endpoints;
@@ -10,9 +11,24 @@ public static class AlertEndpoints
     {
         var group = app.MapGroup("/alerts");
 
-        group.MapGet("/", async (ListAlerts.Handler handler, CancellationToken ct) =>
+        group.MapGet("/", async (
+            int? page,
+            int? pageSize,
+            Guid? ruleId,
+            Guid? signalId,
+            DateTime? fromCreatedUtc,
+            DateTime? toCreatedUtc,
+            ListAlerts.Handler handler,
+            CancellationToken ct) =>
         {
-            var result = await handler.HandleAsync(ct);
+            var query = new AlertListQuery(
+                page ?? 1,
+                pageSize ?? ListQueryNormalization.DefaultPageSize,
+                ruleId,
+                signalId,
+                fromCreatedUtc,
+                toCreatedUtc);
+            var result = await handler.HandleAsync(query, ct);
             return Results.Ok(result);
         });
         group.MapGet("/{id:guid}", () => Results.StatusCode(StatusCodes.Status501NotImplemented));

@@ -36,7 +36,7 @@ public sealed class PersistenceApiTests
         listResponse.EnsureSuccessStatusCode();
         using var doc = JsonDocument.Parse(await listResponse.Content.ReadAsStringAsync());
 
-        Assert.Equal(2, doc.RootElement.GetArrayLength());
+        Assert.Equal(2, doc.RootElement.GetProperty("items").GetArrayLength());
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public sealed class PersistenceApiTests
         alertsResponse.EnsureSuccessStatusCode();
         using var alertsDoc = JsonDocument.Parse(await alertsResponse.Content.ReadAsStringAsync());
 
-        Assert.True(alertsDoc.RootElement.GetArrayLength() >= 1);
+        Assert.True(alertsDoc.RootElement.GetProperty("items").GetArrayLength() >= 1);
     }
 
     [Fact]

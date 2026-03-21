@@ -1,3 +1,5 @@
+using SignalForge.Application.Queries;
+using SignalForge.Contracts;
 using SignalForge.Domain;
 
 namespace SignalForge.Application;
@@ -8,18 +10,19 @@ public interface IRuleRepository
 {
     Task AddAsync(Rule rule, CancellationToken cancellationToken);
     Task<IReadOnlyList<Rule>> ListActiveAsync(CancellationToken cancellationToken);
+    Task<PagedResult<Rule>> ListPagedAsync(RuleListQuery query, CancellationToken cancellationToken);
 }
 
 public interface ISignalRepository
 {
     Task AddAsync(Signal signal, CancellationToken cancellationToken);
-    Task<IReadOnlyList<Signal>> ListAsync(CancellationToken cancellationToken);
+    Task<PagedResult<Signal>> ListPagedAsync(SignalListQuery query, CancellationToken cancellationToken);
 }
 
 public interface IAlertRepository
 {
     Task AddAsync(Alert alert, CancellationToken cancellationToken);
-    Task<IReadOnlyList<Alert>> ListAsync(CancellationToken cancellationToken);
+    Task<PagedResult<Alert>> ListPagedAsync(AlertListQuery query, CancellationToken cancellationToken);
 }
 
 // Identity/crypto abstractions (technical, not transport-specific).

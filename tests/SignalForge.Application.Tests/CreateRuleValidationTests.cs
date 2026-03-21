@@ -1,5 +1,7 @@
 using SignalForge.Application;
+using SignalForge.Application.Queries;
 using SignalForge.Application.UseCases;
+using SignalForge.Contracts;
 using SignalForge.Contracts.Rules;
 using SignalForge.Domain;
 
@@ -56,5 +58,8 @@ public sealed class CreateRuleValidationTests
 
         public Task<IReadOnlyList<Rule>> ListActiveAsync(CancellationToken cancellationToken) =>
             Task.FromResult((IReadOnlyList<Rule>)Array.Empty<Rule>());
+
+        public Task<PagedResult<Rule>> ListPagedAsync(RuleListQuery query, CancellationToken cancellationToken) =>
+            Task.FromResult(new PagedResult<Rule>([], query.Page, query.PageSize, 0));
     }
 }

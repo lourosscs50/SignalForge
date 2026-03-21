@@ -34,6 +34,7 @@ builder.Services.AddTransient<CreateRule.Handler>();
 builder.Services.AddTransient<IngestSignal.Handler>();
 builder.Services.AddTransient<ListAlerts.Handler>();
 builder.Services.AddTransient<ListSignals.Handler>();
+builder.Services.AddTransient<ListRules.Handler>();
 builder.Services.AddTransient<RegisterUser.Handler>();
 builder.Services.AddTransient<LoginUser.Handler>();
 builder.Services.AddTransient<GetCurrentUser.Handler>();

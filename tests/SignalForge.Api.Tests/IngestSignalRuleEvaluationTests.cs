@@ -46,7 +46,7 @@ public sealed class IngestSignalRuleEvaluationTests
         using var alertsDoc = JsonDocument.Parse(await alertsResponse.Content.ReadAsStringAsync());
 
         var found = false;
-        foreach (var el in alertsDoc.RootElement.EnumerateArray())
+        foreach (var el in alertsDoc.RootElement.GetProperty("items").EnumerateArray())
         {
             if (el.GetProperty("signalId").GetGuid() == signalId && el.GetProperty("ruleId").GetGuid() == ruleId)
             {
@@ -97,7 +97,7 @@ public sealed class IngestSignalRuleEvaluationTests
         using var alertsDoc = JsonDocument.Parse(await alertsResponse.Content.ReadAsStringAsync());
 
         var found = false;
-        foreach (var el in alertsDoc.RootElement.EnumerateArray())
+        foreach (var el in alertsDoc.RootElement.GetProperty("items").EnumerateArray())
         {
             if (el.GetProperty("signalId").GetGuid() == signalId && el.GetProperty("ruleId").GetGuid() == ruleId)
             {
@@ -149,7 +149,7 @@ public sealed class IngestSignalRuleEvaluationTests
         using var alertsDoc = JsonDocument.Parse(await alertsResponse.Content.ReadAsStringAsync());
 
         var found = false;
-        foreach (var el in alertsDoc.RootElement.EnumerateArray())
+        foreach (var el in alertsDoc.RootElement.GetProperty("items").EnumerateArray())
         {
             if (el.GetProperty("signalId").GetGuid() == signalId && el.GetProperty("ruleId").GetGuid() == ruleId)
             {
@@ -191,7 +191,7 @@ public sealed class IngestSignalRuleEvaluationTests
         alertsResponse.EnsureSuccessStatusCode();
         using var alertsDoc = JsonDocument.Parse(await alertsResponse.Content.ReadAsStringAsync());
 
-        Assert.Equal(0, alertsDoc.RootElement.GetArrayLength());
+        Assert.Equal(0, alertsDoc.RootElement.GetProperty("items").GetArrayLength());
     }
 
     [Fact]
@@ -224,6 +224,6 @@ public sealed class IngestSignalRuleEvaluationTests
         alertsResponse.EnsureSuccessStatusCode();
         using var alertsDoc = JsonDocument.Parse(await alertsResponse.Content.ReadAsStringAsync());
 
-        Assert.Equal(0, alertsDoc.RootElement.GetArrayLength());
+        Assert.Equal(0, alertsDoc.RootElement.GetProperty("items").GetArrayLength());
     }
 }

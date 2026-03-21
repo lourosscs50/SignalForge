@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
+using SignalForge.Application.Queries;
 using SignalForge.Application.UseCases;
 using SignalForge.Contracts.Rules;
 
@@ -16,7 +17,22 @@ public static class RuleEndpoints
             var result = await handler.HandleAsync(request, ct);
             return Results.Ok(result);
         });
-        group.MapGet("/", () => Results.StatusCode(StatusCodes.Status501NotImplemented));
+        group.MapGet("/", async (
+            int? page,
+            int? pageSize,
+            bool? isActive,
+            string? ruleType,
+            ListRules.Handler handler,
+            CancellationToken ct) =>
+        {
+            var query = new RuleListQuery(
+                page ?? 1,
+                pageSize ?? ListQueryNormalization.DefaultPageSize,
+                isActive,
+                ruleType);
+            var result = await handler.HandleAsync(query, ct);
+            return Results.Ok(result);
+        });
 
         return app;
     }

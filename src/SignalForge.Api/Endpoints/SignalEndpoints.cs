@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Routing;
+using SignalForge.Application.Queries;
 using SignalForge.Application.UseCases;
 using SignalForge.Contracts.Signals;
 
@@ -17,9 +18,24 @@ public static class SignalEndpoints
             var result = await handler.HandleAsync(request, ct);
             return Results.Ok(result);
         });
-        group.MapGet("/", async (ListSignals.Handler handler, CancellationToken ct) =>
+        group.MapGet("/", async (
+            int? page,
+            int? pageSize,
+            string? type,
+            string? source,
+            DateTime? fromOccurredUtc,
+            DateTime? toOccurredUtc,
+            ListSignals.Handler handler,
+            CancellationToken ct) =>
         {
-            var result = await handler.HandleAsync(ct);
+            var query = new SignalListQuery(
+                page ?? 1,
+                pageSize ?? ListQueryNormalization.DefaultPageSize,
+                type,
+                source,
+                fromOccurredUtc,
+                toOccurredUtc);
+            var result = await handler.HandleAsync(query, ct);
             return Results.Ok(result);
         });
         group.MapGet("/{id:guid}", () => Results.StatusCode(StatusCodes.Status501NotImplemented));
