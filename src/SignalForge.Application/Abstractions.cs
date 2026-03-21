@@ -46,3 +46,16 @@ public interface IDateTimeProvider
     DateTime UtcNow { get; }
 }
 
+/// <summary>Strategy for evaluating a single rule style against a signal.</summary>
+public interface IRuleEvaluator
+{
+    bool CanEvaluate(Rule rule);
+    bool IsMatch(Rule rule, Signal signal);
+}
+
+/// <summary>Orchestrates rule evaluation after signal ingestion.</summary>
+public interface ISignalEvaluationService
+{
+    Task EvaluateAsync(Signal signal, CancellationToken cancellationToken = default);
+}
+

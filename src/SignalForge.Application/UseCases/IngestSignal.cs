@@ -1,3 +1,4 @@
+using SignalForge.Application;
 using SignalForge.Contracts.Signals;
 using SignalForge.Domain;
 
@@ -5,7 +6,7 @@ namespace SignalForge.Application.UseCases;
 
 public static class IngestSignal
 {
-    public sealed class Handler(ISignalRepository signals)
+    public sealed class Handler(ISignalRepository signals, ISignalEvaluationService evaluation)
     {
         public async Task<SignalResponse> HandleAsync(IngestSignalRequest request, CancellationToken cancellationToken)
         {
@@ -22,6 +23,7 @@ public static class IngestSignal
             );
 
             await signals.AddAsync(signal, cancellationToken);
+            await evaluation.EvaluateAsync(signal, cancellationToken);
 
             return new SignalResponse(
                 Id: signal.Id,

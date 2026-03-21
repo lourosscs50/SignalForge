@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using SignalForge.Api.Endpoints;
 using SignalForge.Application;
+using SignalForge.Application.Evaluation;
 using SignalForge.Application.UseCases;
 using SignalForge.Application.UseCases.Identity;
 using SignalForge.Infrastructure;
@@ -23,6 +24,10 @@ builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
 builder.Services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
 builder.Services.AddSingleton<ITokenService, JwtTokenService>();
 builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
+
+// Rule evaluation (strategy + orchestration)
+builder.Services.AddSingleton<IRuleEvaluator, SignalTypeEqualsRuleEvaluator>();
+builder.Services.AddSingleton<ISignalEvaluationService, SignalEvaluationService>();
 
 // Use cases
 builder.Services.AddTransient<CreateRule.Handler>();
