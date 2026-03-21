@@ -2,7 +2,7 @@ using NetArchTest.Rules;
 using SignalForge.Application;
 using SignalForge.Contracts.Rules;
 using SignalForge.Domain;
-using SignalForge.Infrastructure;
+using SignalForge.Infrastructure.Persistence;
 
 namespace SignalForge.Architecture.Tests;
 
@@ -57,7 +57,7 @@ public sealed class LayerDependencyTests
     [Fact]
     public void Infrastructure_does_not_depend_on_Api()
     {
-        var result = Types.InAssembly(typeof(InMemoryRuleRepository).Assembly)
+        var result = Types.InAssembly(typeof(EfRuleRepository).Assembly)
             .That()
             .ResideInNamespaceStartingWith("SignalForge.Infrastructure")
             .ShouldNot()

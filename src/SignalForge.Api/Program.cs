@@ -6,19 +6,17 @@ using SignalForge.Application;
 using SignalForge.Application.Evaluation;
 using SignalForge.Application.UseCases;
 using SignalForge.Application.UseCases.Identity;
-using SignalForge.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using SignalForge.Infrastructure.Authentication;
+using SignalForge.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Persistence (in-memory)
-builder.Services.AddSingleton<IRuleRepository, InMemoryRuleRepository>();
-builder.Services.AddSingleton<ISignalRepository, InMemorySignalRepository>();
-builder.Services.AddSingleton<IAlertRepository, InMemoryAlertRepository>();
-builder.Services.AddSingleton<IUserRepository, InMemoryUserRepository>();
+// Persistence (EF Core + PostgreSQL; in-memory DB in Testing)
+builder.Services.AddSignalForgePersistence(builder.Configuration, builder.Environment);
 
 // Identity/crypto/JWT (infrastructure)
 builder.Services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
@@ -29,7 +27,7 @@ builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 builder.Services.AddSingleton<IRuleEvaluator, SignalTypeEqualsRuleEvaluator>();
 builder.Services.AddSingleton<IRuleEvaluator, SignalTypeContainsRuleEvaluator>();
 builder.Services.AddSingleton<IRuleEvaluator, SignalValueGreaterThanRuleEvaluator>();
-builder.Services.AddSingleton<ISignalEvaluationService, SignalEvaluationService>();
+builder.Services.AddScoped<ISignalEvaluationService, SignalEvaluationService>();
 
 // Use cases
 builder.Services.AddTransient<CreateRule.Handler>();
@@ -80,6 +78,12 @@ builder.Services
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    await scope.ServiceProvider.GetRequiredService<SignalForgeDbContext>().Database.MigrateAsync();
+}
 
 app.Use(async (context, next) =>
 {

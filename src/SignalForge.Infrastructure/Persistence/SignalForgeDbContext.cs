@@ -1,17 +1,22 @@
 using Microsoft.EntityFrameworkCore;
+using SignalForge.Domain;
 
 namespace SignalForge.Infrastructure.Persistence;
 
-public class SignalForgeDbContext : DbContext
+public sealed class SignalForgeDbContext : DbContext
 {
     public SignalForgeDbContext(DbContextOptions<SignalForgeDbContext> options)
         : base(options)
     {
     }
 
-    // TEMP placeholders (we will wire real domain entities next)
-    public DbSet<object> Users => Set<object>();
-    public DbSet<object> Signals => Set<object>();
-    public DbSet<object> Rules => Set<object>();
-    public DbSet<object> Alerts => Set<object>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Rule> Rules => Set<Rule>();
+    public DbSet<Signal> Signals => Set<Signal>();
+    public DbSet<Alert> Alerts => Set<Alert>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(SignalForgeDbContext).Assembly);
+    }
 }
