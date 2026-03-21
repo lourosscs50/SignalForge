@@ -27,6 +27,7 @@ builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 
 // Rule evaluation (strategy + orchestration)
 builder.Services.AddSingleton<IRuleEvaluator, SignalTypeEqualsRuleEvaluator>();
+builder.Services.AddSingleton<IRuleEvaluator, SignalTypeContainsRuleEvaluator>();
 builder.Services.AddSingleton<ISignalEvaluationService, SignalEvaluationService>();
 
 // Use cases

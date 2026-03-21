@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\SignalForge.Api\SignalForge.Api.csproj" />
     <ProjectReference Include="..\..\src\SignalForge.Application\SignalForge.Application.csproj" />
+    <ProjectReference Include="..\..\src\SignalForge.Contracts\SignalForge.Contracts.csproj" />
     <ProjectReference Include="..\..\src\SignalForge.Domain\SignalForge.Domain.csproj" />
     <ProjectReference Include="..\..\src\SignalForge.Infrastructure\SignalForge.Infrastructure.csproj" />
   </ItemGroup>
