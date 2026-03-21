@@ -154,5 +154,6 @@ Apache License 2.0
 👤 Author
 Lou Carron
 GitHub: https://github.com/lourosscs50
+portfolio: https://www.loucarron.dev
 💬 Final Note
 SignalForge is not just an API — it is a foundation for building real-time detection systems.
