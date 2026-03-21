@@ -1,3 +1,4 @@
+using System.Globalization;
 using SignalForge.Contracts.Rules;
 using SignalForge.Domain;
 
@@ -23,6 +24,8 @@ public static class CreateRule
             if (string.IsNullOrEmpty(matchValue))
                 throw new ArgumentException("MatchValue is required.", nameof(request));
 
+            ValidateMatchValueForCanonicalRuleType(canonicalRuleType, matchValue, nameof(request));
+
             var createdAtUtc = DateTime.UtcNow;
 
             var rule = new Rule(
@@ -34,6 +37,20 @@ public static class CreateRule
                 CreatedAtUtc: createdAtUtc);
 
             return MapAndPersist(rule, cancellationToken);
+        }
+
+        private static void ValidateMatchValueForCanonicalRuleType(
+            string canonicalRuleType,
+            string matchValue,
+            string paramName)
+        {
+            if (canonicalRuleType == RuleTypes.SignalValueGreaterThan)
+            {
+                if (!double.TryParse(matchValue, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
+                    throw new ArgumentException(
+                        "MatchValue must be a valid number for SignalValueGreaterThan rules.",
+                        paramName);
+            }
         }
 
         private static bool TryNormalizeRuleType(string ruleType, out string canonicalRuleType)
