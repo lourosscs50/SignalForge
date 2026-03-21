@@ -18,6 +18,7 @@ public static class IngestSignal
                 Source: request.Source,
                 Type: request.Type,
                 Payload: "",
+                Value: request.Value,
                 OccurredAtUtc: occurredAtUtc,
                 IngestedAtUtc: ingestedAtUtc
             );
@@ -29,7 +30,8 @@ public static class IngestSignal
                 Id: signal.Id,
                 Source: signal.Source,
                 Type: signal.Type,
-                TimestampUtc: new DateTimeOffset(signal.OccurredAtUtc, TimeSpan.Zero)
+                TimestampUtc: new DateTimeOffset(signal.OccurredAtUtc, TimeSpan.Zero),
+                Value: signal.Value
             );
         }
     }

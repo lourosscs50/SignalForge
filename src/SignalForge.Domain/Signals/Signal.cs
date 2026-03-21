@@ -5,6 +5,7 @@ public sealed record Signal(
     string Source,
     string Type,
     string Payload,
+    double? Value,
     DateTime OccurredAtUtc,
     DateTime IngestedAtUtc
 );

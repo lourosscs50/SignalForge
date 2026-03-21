@@ -15,7 +15,9 @@ public static class CreateRule
 
             var ruleType = (request.RuleType ?? string.Empty).Trim();
             if (!TryNormalizeRuleType(ruleType, out var canonicalRuleType))
-                throw new ArgumentException("RuleType must be SignalTypeEquals or SignalTypeContains.", nameof(request));
+                throw new ArgumentException(
+                    "RuleType must be SignalTypeEquals, SignalTypeContains, or SignalValueGreaterThan.",
+                    nameof(request));
 
             var matchValue = (request.MatchValue ?? string.Empty).Trim();
             if (string.IsNullOrEmpty(matchValue))
@@ -45,6 +47,12 @@ public static class CreateRule
             if (string.Equals(ruleType, RuleTypes.SignalTypeContains, StringComparison.OrdinalIgnoreCase))
             {
                 canonicalRuleType = RuleTypes.SignalTypeContains;
+                return true;
+            }
+
+            if (string.Equals(ruleType, RuleTypes.SignalValueGreaterThan, StringComparison.OrdinalIgnoreCase))
+            {
+                canonicalRuleType = RuleTypes.SignalValueGreaterThan;
                 return true;
             }
 

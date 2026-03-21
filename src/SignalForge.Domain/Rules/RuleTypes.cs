@@ -5,4 +5,5 @@ public static class RuleTypes
 {
     public const string SignalTypeEquals = "SignalTypeEquals";
     public const string SignalTypeContains = "SignalTypeContains";
+    public const string SignalValueGreaterThan = "SignalValueGreaterThan";
 }

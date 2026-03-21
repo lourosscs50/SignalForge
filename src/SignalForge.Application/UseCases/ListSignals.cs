@@ -15,7 +15,8 @@ public static class ListSignals
                     Id: s.Id,
                     Source: s.Source,
                     Type: s.Type,
-                    TimestampUtc: new DateTimeOffset(s.OccurredAtUtc, TimeSpan.Zero)
+                    TimestampUtc: new DateTimeOffset(s.OccurredAtUtc, TimeSpan.Zero),
+                    Value: s.Value
                 ))
                 .ToList();
         }
