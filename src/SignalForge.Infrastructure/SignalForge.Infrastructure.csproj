@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SignalForge.Application\SignalForge.Application.csproj" />
+    <ProjectReference Include="..\SignalForge.Contracts\SignalForge.Contracts.csproj" />
     <ProjectReference Include="..\SignalForge.Domain\SignalForge.Domain.csproj" />
   </ItemGroup>
 
@@ -23,10 +24,5 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\SignalForge.Application\SignalForge.Application.csproj" />
-    <ProjectReference Include="..\SignalForge.Contracts\SignalForge.Contracts.csproj" />
-  </ItemGroup>
 
 </Project>
