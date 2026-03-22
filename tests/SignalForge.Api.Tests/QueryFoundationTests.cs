@@ -77,6 +77,9 @@ public sealed class QueryFoundationTests
         using var app = new SignalForgeWebAppFactory();
         var client = SignalForgeApiTestHelpers.CreateClient(app);
 
+        var token = await SignalForgeApiTestHelpers.RegisterAsync(client, "qf-rules@example.com", "User", "secret");
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
         await client.PostAsJsonAsync("/rules", new
         {
             name = "Listed",

@@ -61,5 +61,16 @@ public sealed class CreateRuleValidationTests
 
         public Task<PagedResult<Rule>> ListPagedAsync(RuleListQuery query, CancellationToken cancellationToken) =>
             Task.FromResult(new PagedResult<Rule>([], query.Page, query.PageSize, 0));
+
+        public Task<Rule?> GetByIdAsync(Guid id, CancellationToken cancellationToken) =>
+            Task.FromResult(Added.FirstOrDefault(r => r.Id == id));
+
+        public Task UpdateAsync(Rule rule, CancellationToken cancellationToken)
+        {
+            var ix = Added.FindIndex(r => r.Id == rule.Id);
+            if (ix >= 0)
+                Added[ix] = rule;
+            return Task.CompletedTask;
+        }
     }
 }

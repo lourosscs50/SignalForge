@@ -36,6 +36,42 @@ public sealed class DomainModelTests
     }
 
     [Fact]
+    public void Rule_Activate_is_idempotent_when_already_active()
+    {
+        var id = Guid.NewGuid();
+        var t = DateTime.UtcNow;
+        var r = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", true, t);
+
+        var a = r.Activate();
+        Assert.True(a.IsActive);
+        var b = a.Activate();
+        Assert.True(b.IsActive);
+    }
+
+    [Fact]
+    public void Rule_Deactivate_is_idempotent_when_already_inactive()
+    {
+        var id = Guid.NewGuid();
+        var t = DateTime.UtcNow;
+        var r = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", false, t);
+
+        var a = r.Deactivate();
+        Assert.False(a.IsActive);
+        var b = a.Deactivate();
+        Assert.False(b.IsActive);
+    }
+
+    [Fact]
+    public void Rule_Activate_and_Deactivate_toggle_IsActive()
+    {
+        var id = Guid.NewGuid();
+        var t = DateTime.UtcNow;
+        var active = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", true, t);
+        Assert.False(active.Deactivate().IsActive);
+        Assert.True(active.Deactivate().Activate().IsActive);
+    }
+
+    [Fact]
     public void Alert_links_SignalId_and_RuleId()
     {
         var alertId = Guid.NewGuid();

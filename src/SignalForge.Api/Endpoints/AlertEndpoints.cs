@@ -22,8 +22,8 @@ public static class AlertEndpoints
             CancellationToken ct) =>
         {
             var query = new AlertListQuery(
-                page ?? 1,
-                pageSize ?? ListQueryNormalization.DefaultPageSize,
+                ListQueryNormalization.ResolvePageOrDefault(page),
+                ListQueryNormalization.ResolvePageSizeOrDefault(pageSize),
                 ruleId,
                 signalId,
                 fromCreatedUtc,
@@ -31,7 +31,11 @@ public static class AlertEndpoints
             var result = await handler.HandleAsync(query, ct);
             return Results.Ok(result);
         });
-        group.MapGet("/{id:guid}", () => Results.StatusCode(StatusCodes.Status501NotImplemented));
+        group.MapGet("/{id:guid}", async (Guid id, GetAlert.Handler handler, CancellationToken ct) =>
+        {
+            var result = await handler.HandleAsync(id, ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        });
         group.MapPost("/{id:guid}/acknowledge", () => Results.StatusCode(StatusCodes.Status501NotImplemented));
         group.MapPost("/{id:guid}/resolve", () => Results.StatusCode(StatusCodes.Status501NotImplemented));
 

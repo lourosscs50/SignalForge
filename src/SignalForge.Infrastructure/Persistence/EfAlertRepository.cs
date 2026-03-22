@@ -14,10 +14,17 @@ public sealed class EfAlertRepository(SignalForgeDbContext db) : IAlertRepositor
         await db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<Alert?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await db.Alerts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
+    }
+
     public async Task<PagedResult<Alert>> ListPagedAsync(AlertListQuery query, CancellationToken cancellationToken)
     {
-        var page = ListQueryNormalization.NormalizePage(query.Page);
-        var pageSize = ListQueryNormalization.NormalizePageSize(query.PageSize);
+        var page = query.Page;
+        var pageSize = query.PageSize;
 
         IQueryable<Alert> q = db.Alerts.AsNoTracking();
 
@@ -36,6 +43,7 @@ public sealed class EfAlertRepository(SignalForgeDbContext db) : IAlertRepositor
         var total = await q.CountAsync(cancellationToken);
         var items = await q
             .OrderByDescending(a => a.CreatedAtUtc)
+            .ThenBy(a => a.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);

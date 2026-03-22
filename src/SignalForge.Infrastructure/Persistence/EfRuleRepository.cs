@@ -14,12 +14,26 @@ public sealed class EfRuleRepository(SignalForgeDbContext db) : IRuleRepository
         await db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<Rule?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await db.Rules
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+    }
+
+    public async Task UpdateAsync(Rule rule, CancellationToken cancellationToken)
+    {
+        db.Rules.Update(rule);
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Rule>> ListActiveAsync(CancellationToken cancellationToken)
     {
         var list = await db.Rules
             .AsNoTracking()
             .Where(r => r.IsActive)
             .OrderBy(r => r.CreatedAtUtc)
+            .ThenBy(r => r.Id)
             .ToListAsync(cancellationToken);
 
         return list;
@@ -27,8 +41,8 @@ public sealed class EfRuleRepository(SignalForgeDbContext db) : IRuleRepository
 
     public async Task<PagedResult<Rule>> ListPagedAsync(RuleListQuery query, CancellationToken cancellationToken)
     {
-        var page = ListQueryNormalization.NormalizePage(query.Page);
-        var pageSize = ListQueryNormalization.NormalizePageSize(query.PageSize);
+        var page = query.Page;
+        var pageSize = query.PageSize;
 
         IQueryable<Rule> q = db.Rules.AsNoTracking();
 
@@ -44,6 +58,7 @@ public sealed class EfRuleRepository(SignalForgeDbContext db) : IRuleRepository
         var total = await q.CountAsync(cancellationToken);
         var items = await q
             .OrderByDescending(r => r.CreatedAtUtc)
+            .ThenBy(r => r.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);

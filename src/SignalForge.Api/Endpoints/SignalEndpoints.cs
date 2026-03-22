@@ -29,8 +29,8 @@ public static class SignalEndpoints
             CancellationToken ct) =>
         {
             var query = new SignalListQuery(
-                page ?? 1,
-                pageSize ?? ListQueryNormalization.DefaultPageSize,
+                ListQueryNormalization.ResolvePageOrDefault(page),
+                ListQueryNormalization.ResolvePageSizeOrDefault(pageSize),
                 type,
                 source,
                 fromOccurredUtc,
@@ -38,7 +38,11 @@ public static class SignalEndpoints
             var result = await handler.HandleAsync(query, ct);
             return Results.Ok(result);
         });
-        group.MapGet("/{id:guid}", () => Results.StatusCode(StatusCodes.Status501NotImplemented));
+        group.MapGet("/{id:guid}", async (Guid id, GetSignal.Handler handler, CancellationToken ct) =>
+        {
+            var result = await handler.HandleAsync(id, ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        });
 
         return app;
     }

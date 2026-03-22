@@ -9,6 +9,8 @@ namespace SignalForge.Application;
 public interface IRuleRepository
 {
     Task AddAsync(Rule rule, CancellationToken cancellationToken);
+    Task<Rule?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+    Task UpdateAsync(Rule rule, CancellationToken cancellationToken);
     Task<IReadOnlyList<Rule>> ListActiveAsync(CancellationToken cancellationToken);
     Task<PagedResult<Rule>> ListPagedAsync(RuleListQuery query, CancellationToken cancellationToken);
 }
@@ -16,12 +18,14 @@ public interface IRuleRepository
 public interface ISignalRepository
 {
     Task AddAsync(Signal signal, CancellationToken cancellationToken);
+    Task<Signal?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<PagedResult<Signal>> ListPagedAsync(SignalListQuery query, CancellationToken cancellationToken);
 }
 
 public interface IAlertRepository
 {
     Task AddAsync(Alert alert, CancellationToken cancellationToken);
+    Task<Alert?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task<PagedResult<Alert>> ListPagedAsync(AlertListQuery query, CancellationToken cancellationToken);
 }
 

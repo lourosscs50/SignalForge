@@ -9,4 +9,11 @@ public sealed record Rule(
     string MatchValue,
     bool IsActive,
     DateTime CreatedAtUtc
-);
+)
+{
+    /// <summary>Marks the rule active. Idempotent when already active.</summary>
+    public Rule Activate() => this with { IsActive = true };
+
+    /// <summary>Marks the rule inactive. Idempotent when already inactive.</summary>
+    public Rule Deactivate() => this with { IsActive = false };
+}

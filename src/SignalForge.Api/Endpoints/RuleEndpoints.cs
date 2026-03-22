@@ -17,6 +17,7 @@ public static class RuleEndpoints
             var result = await handler.HandleAsync(request, ct);
             return Results.Ok(result);
         });
+
         group.MapGet("/", async (
             int? page,
             int? pageSize,
@@ -26,13 +27,31 @@ public static class RuleEndpoints
             CancellationToken ct) =>
         {
             var query = new RuleListQuery(
-                page ?? 1,
-                pageSize ?? ListQueryNormalization.DefaultPageSize,
+                ListQueryNormalization.ResolvePageOrDefault(page),
+                ListQueryNormalization.ResolvePageSizeOrDefault(pageSize),
                 isActive,
                 ruleType);
             var result = await handler.HandleAsync(query, ct);
             return Results.Ok(result);
-        });
+        }).RequireAuthorization();
+
+        group.MapGet("/{id:guid}", async (Guid id, GetRule.Handler handler, CancellationToken ct) =>
+        {
+            var result = await handler.HandleAsync(id, ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        }).RequireAuthorization();
+
+        group.MapPost("/{id:guid}/activate", async (Guid id, ActivateRule.Handler handler, CancellationToken ct) =>
+        {
+            var result = await handler.HandleAsync(id, ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        }).RequireAuthorization();
+
+        group.MapPost("/{id:guid}/deactivate", async (Guid id, DeactivateRule.Handler handler, CancellationToken ct) =>
+        {
+            var result = await handler.HandleAsync(id, ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        }).RequireAuthorization();
 
         return app;
     }
