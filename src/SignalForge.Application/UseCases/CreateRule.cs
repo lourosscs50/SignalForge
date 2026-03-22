@@ -1,4 +1,4 @@
-using System.Globalization;
+using SignalForge.Application;
 using SignalForge.Contracts.Rules;
 using SignalForge.Domain;
 
@@ -6,25 +6,20 @@ namespace SignalForge.Application.UseCases;
 
 public static class CreateRule
 {
-    public sealed class Handler(IRuleRepository rules)
+    public sealed class Handler(IRuleRepository rules, IRuleAuditRepository audit)
     {
         public Task<RuleResponse> HandleAsync(CreateRuleRequest request, CancellationToken cancellationToken)
         {
-            var name = (request.Name ?? string.Empty).Trim();
-            if (string.IsNullOrEmpty(name))
-                throw new ArgumentException("Name is required.", nameof(request));
+            var name = RuleValidation.NormalizeRequiredName(request.Name, nameof(request));
 
             var ruleType = (request.RuleType ?? string.Empty).Trim();
-            if (!TryNormalizeRuleType(ruleType, out var canonicalRuleType))
+            if (!RuleValidation.TryNormalizeRuleType(ruleType, out var canonicalRuleType))
                 throw new ArgumentException(
                     "RuleType must be SignalTypeEquals, SignalTypeContains, or SignalValueGreaterThan.",
                     nameof(request));
 
-            var matchValue = (request.MatchValue ?? string.Empty).Trim();
-            if (string.IsNullOrEmpty(matchValue))
-                throw new ArgumentException("MatchValue is required.", nameof(request));
-
-            ValidateMatchValueForCanonicalRuleType(canonicalRuleType, matchValue, nameof(request));
+            var matchValue = RuleValidation.NormalizeRequiredMatchValue(request.MatchValue, nameof(request));
+            RuleValidation.ValidateMatchValueForCanonicalRuleType(canonicalRuleType, matchValue, nameof(request));
 
             var createdAtUtc = DateTime.UtcNow;
 
@@ -34,60 +29,25 @@ public static class CreateRule
                 RuleType: canonicalRuleType,
                 MatchValue: matchValue,
                 IsActive: request.IsActive,
+                IsArchived: false,
                 CreatedAtUtc: createdAtUtc);
 
             return MapAndPersist(rule, cancellationToken);
-        }
-
-        private static void ValidateMatchValueForCanonicalRuleType(
-            string canonicalRuleType,
-            string matchValue,
-            string paramName)
-        {
-            if (canonicalRuleType == RuleTypes.SignalValueGreaterThan)
-            {
-                if (!double.TryParse(matchValue, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
-                    throw new ArgumentException(
-                        "MatchValue must be a valid number for SignalValueGreaterThan rules.",
-                        paramName);
-            }
-        }
-
-        private static bool TryNormalizeRuleType(string ruleType, out string canonicalRuleType)
-        {
-            if (string.Equals(ruleType, RuleTypes.SignalTypeEquals, StringComparison.OrdinalIgnoreCase))
-            {
-                canonicalRuleType = RuleTypes.SignalTypeEquals;
-                return true;
-            }
-
-            if (string.Equals(ruleType, RuleTypes.SignalTypeContains, StringComparison.OrdinalIgnoreCase))
-            {
-                canonicalRuleType = RuleTypes.SignalTypeContains;
-                return true;
-            }
-
-            if (string.Equals(ruleType, RuleTypes.SignalValueGreaterThan, StringComparison.OrdinalIgnoreCase))
-            {
-                canonicalRuleType = RuleTypes.SignalValueGreaterThan;
-                return true;
-            }
-
-            canonicalRuleType = string.Empty;
-            return false;
         }
 
         private async Task<RuleResponse> MapAndPersist(Rule rule, CancellationToken cancellationToken)
         {
             await rules.AddAsync(rule, cancellationToken);
 
-            return new RuleResponse(
-                Id: rule.Id,
-                Name: rule.Name,
-                RuleType: rule.RuleType,
-                MatchValue: rule.MatchValue,
-                IsActive: rule.IsActive,
-                CreatedAtUtc: new DateTimeOffset(rule.CreatedAtUtc, TimeSpan.Zero));
+            await audit.AddAsync(
+                new RuleAuditEntry(
+                    Id: Guid.NewGuid(),
+                    RuleId: rule.Id,
+                    Action: RuleAuditActions.Created,
+                    OccurredAtUtc: rule.CreatedAtUtc),
+                cancellationToken);
+
+            return RuleMappings.ToResponse(rule);
         }
     }
 }

@@ -12,7 +12,7 @@ public sealed class CreateRuleValidationTests
     [Fact]
     public async Task HandleAsync_rejects_invalid_numeric_MatchValue_for_SignalValueGreaterThan()
     {
-        var handler = new CreateRule.Handler(new FakeRuleRepository());
+        var handler = new CreateRule.Handler(new FakeRuleRepository(), new FakeRuleAuditRepository());
 
         var ex = await Assert.ThrowsAsync<ArgumentException>(() => handler.HandleAsync(
             new CreateRuleRequest("Rule", RuleTypes.SignalValueGreaterThan, "abc", true),
@@ -24,7 +24,7 @@ public sealed class CreateRuleValidationTests
     [Fact]
     public async Task HandleAsync_rejects_blank_MatchValue()
     {
-        var handler = new CreateRule.Handler(new FakeRuleRepository());
+        var handler = new CreateRule.Handler(new FakeRuleRepository(), new FakeRuleAuditRepository());
 
         await Assert.ThrowsAsync<ArgumentException>(() => handler.HandleAsync(
             new CreateRuleRequest("Rule", RuleTypes.SignalTypeEquals, "   ", true),
@@ -35,7 +35,8 @@ public sealed class CreateRuleValidationTests
     public async Task HandleAsync_accepts_valid_numeric_MatchValue_for_SignalValueGreaterThan()
     {
         var repo = new FakeRuleRepository();
-        var handler = new CreateRule.Handler(repo);
+        var audit = new FakeRuleAuditRepository();
+        var handler = new CreateRule.Handler(repo, audit);
 
         var response = await handler.HandleAsync(
             new CreateRuleRequest("Threshold", RuleTypes.SignalValueGreaterThan, "10.5", true),
@@ -44,6 +45,23 @@ public sealed class CreateRuleValidationTests
         Assert.Equal(RuleTypes.SignalValueGreaterThan, response.RuleType);
         Assert.Equal("10.5", response.MatchValue);
         Assert.Single(repo.Added);
+        var created = Assert.Single(audit.Entries);
+        Assert.Equal(RuleAuditActions.Created, created.Action);
+        Assert.Equal(response.Id, created.RuleId);
+    }
+
+    private sealed class FakeRuleAuditRepository : IRuleAuditRepository
+    {
+        public List<RuleAuditEntry> Entries { get; } = [];
+
+        public Task AddAsync(RuleAuditEntry entry, CancellationToken cancellationToken)
+        {
+            Entries.Add(entry);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<RuleAuditEntry>> ListByRuleIdAsync(Guid ruleId, CancellationToken cancellationToken) =>
+            Task.FromResult((IReadOnlyList<RuleAuditEntry>)Entries.Where(e => e.RuleId == ruleId).ToList());
     }
 
     private sealed class FakeRuleRepository : IRuleRepository

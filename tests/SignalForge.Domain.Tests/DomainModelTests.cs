@@ -29,7 +29,7 @@ public sealed class DomainModelTests
     {
         var id = Guid.NewGuid();
         var t = DateTime.UtcNow;
-        var r = new Rule(id, "n", RuleTypes.SignalTypeEquals, "temperature", true, t);
+        var r = new Rule(id, "n", RuleTypes.SignalTypeEquals, "temperature", true, false, t);
 
         Assert.Equal(RuleTypes.SignalTypeEquals, r.RuleType);
         Assert.Equal("temperature", r.MatchValue);
@@ -40,7 +40,7 @@ public sealed class DomainModelTests
     {
         var id = Guid.NewGuid();
         var t = DateTime.UtcNow;
-        var r = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", true, t);
+        var r = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", true, false, t);
 
         var a = r.Activate();
         Assert.True(a.IsActive);
@@ -53,7 +53,7 @@ public sealed class DomainModelTests
     {
         var id = Guid.NewGuid();
         var t = DateTime.UtcNow;
-        var r = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", false, t);
+        var r = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", false, false, t);
 
         var a = r.Deactivate();
         Assert.False(a.IsActive);
@@ -66,9 +66,61 @@ public sealed class DomainModelTests
     {
         var id = Guid.NewGuid();
         var t = DateTime.UtcNow;
-        var active = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", true, t);
+        var active = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", true, false, t);
         Assert.False(active.Deactivate().IsActive);
         Assert.True(active.Deactivate().Activate().IsActive);
+    }
+
+    [Fact]
+    public void Rule_UpdateDetails_changes_name_and_match_only()
+    {
+        var id = Guid.NewGuid();
+        var t = DateTime.UtcNow;
+        var r = new Rule(id, "old", RuleTypes.SignalTypeEquals, "a", false, false, t);
+
+        var u = r.UpdateDetails("new", "b");
+
+        Assert.Equal(id, u.Id);
+        Assert.Equal(RuleTypes.SignalTypeEquals, u.RuleType);
+        Assert.False(u.IsActive);
+        Assert.False(u.IsArchived);
+        Assert.Equal(t, u.CreatedAtUtc);
+        Assert.Equal("new", u.Name);
+        Assert.Equal("b", u.MatchValue);
+    }
+
+    [Fact]
+    public void Rule_Archive_sets_archived_and_deactivates()
+    {
+        var id = Guid.NewGuid();
+        var t = DateTime.UtcNow;
+        var r = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", true, false, t);
+
+        var a = r.Archive();
+
+        Assert.True(a.IsArchived);
+        Assert.False(a.IsActive);
+    }
+
+    [Fact]
+    public void Rule_Archive_is_idempotent()
+    {
+        var id = Guid.NewGuid();
+        var t = DateTime.UtcNow;
+        var r = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", false, true, t);
+
+        var a = r.Archive();
+        Assert.Same(r, a);
+    }
+
+    [Fact]
+    public void Rule_Activate_throws_when_archived()
+    {
+        var id = Guid.NewGuid();
+        var t = DateTime.UtcNow;
+        var r = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", false, true, t);
+
+        Assert.Throws<InvalidOperationException>(() => r.Activate());
     }
 
     [Fact]

@@ -27,9 +27,13 @@ public sealed class RuleConfiguration : IEntityTypeConfiguration<Rule>
         builder.Property(r => r.IsActive)
             .IsRequired();
 
+        builder.Property(r => r.IsArchived)
+            .IsRequired();
+
         builder.Property(r => r.CreatedAtUtc)
             .IsRequired();
 
         builder.HasIndex(r => r.IsActive);
+        builder.HasIndex(r => r.IsArchived);
     }
 }

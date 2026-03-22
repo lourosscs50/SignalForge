@@ -41,6 +41,18 @@ public static class RuleEndpoints
             return result is null ? Results.NotFound() : Results.Ok(result);
         }).RequireAuthorization();
 
+        group.MapGet("/{id:guid}/audit", async (Guid id, GetRuleAudit.Handler handler, CancellationToken ct) =>
+        {
+            var result = await handler.HandleAsync(id, ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        }).RequireAuthorization();
+
+        group.MapPut("/{id:guid}", async (Guid id, UpdateRuleRequest request, UpdateRule.Handler handler, CancellationToken ct) =>
+        {
+            var result = await handler.HandleAsync(id, request, ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        }).RequireAuthorization();
+
         group.MapPost("/{id:guid}/activate", async (Guid id, ActivateRule.Handler handler, CancellationToken ct) =>
         {
             var result = await handler.HandleAsync(id, ct);
@@ -48,6 +60,12 @@ public static class RuleEndpoints
         }).RequireAuthorization();
 
         group.MapPost("/{id:guid}/deactivate", async (Guid id, DeactivateRule.Handler handler, CancellationToken ct) =>
+        {
+            var result = await handler.HandleAsync(id, ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        }).RequireAuthorization();
+
+        group.MapPost("/{id:guid}/archive", async (Guid id, ArchiveRule.Handler handler, CancellationToken ct) =>
         {
             var result = await handler.HandleAsync(id, ct);
             return result is null ? Results.NotFound() : Results.Ok(result);

@@ -12,5 +12,6 @@ internal static class RuleMappings
             rule.RuleType,
             rule.MatchValue,
             rule.IsActive,
+            rule.IsArchived,
             new DateTimeOffset(rule.CreatedAtUtc, TimeSpan.Zero));
 }

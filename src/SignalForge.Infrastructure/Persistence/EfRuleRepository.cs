@@ -31,7 +31,7 @@ public sealed class EfRuleRepository(SignalForgeDbContext db) : IRuleRepository
     {
         var list = await db.Rules
             .AsNoTracking()
-            .Where(r => r.IsActive)
+            .Where(r => r.IsActive && !r.IsArchived)
             .OrderBy(r => r.CreatedAtUtc)
             .ThenBy(r => r.Id)
             .ToListAsync(cancellationToken);

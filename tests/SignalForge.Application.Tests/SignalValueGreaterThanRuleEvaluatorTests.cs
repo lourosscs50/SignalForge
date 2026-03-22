@@ -10,7 +10,7 @@ public sealed class SignalValueGreaterThanRuleEvaluatorTests
     [Fact]
     public void IsMatch_returns_true_when_signal_value_is_greater_than_threshold()
     {
-        var rule = new Rule(Guid.NewGuid(), "n", RuleTypes.SignalValueGreaterThan, "10", true, DateTime.UtcNow);
+        var rule = new Rule(Guid.NewGuid(), "n", RuleTypes.SignalValueGreaterThan, "10", true, false, DateTime.UtcNow);
         var signal = new Signal(Guid.NewGuid(), "src", "t", "", 10.5, DateTime.UtcNow, DateTime.UtcNow);
 
         Assert.True(_sut.CanEvaluate(rule));
@@ -20,7 +20,7 @@ public sealed class SignalValueGreaterThanRuleEvaluatorTests
     [Fact]
     public void IsMatch_returns_false_when_signal_value_is_less_than_or_equal_to_threshold()
     {
-        var rule = new Rule(Guid.NewGuid(), "n", RuleTypes.SignalValueGreaterThan, "10", true, DateTime.UtcNow);
+        var rule = new Rule(Guid.NewGuid(), "n", RuleTypes.SignalValueGreaterThan, "10", true, false, DateTime.UtcNow);
         var below = new Signal(Guid.NewGuid(), "src", "t", "", 9.9, DateTime.UtcNow, DateTime.UtcNow);
         var equal = new Signal(Guid.NewGuid(), "src", "t", "", 10.0, DateTime.UtcNow, DateTime.UtcNow);
 
@@ -32,7 +32,7 @@ public sealed class SignalValueGreaterThanRuleEvaluatorTests
     [Fact]
     public void IsMatch_returns_false_when_signal_value_is_null()
     {
-        var rule = new Rule(Guid.NewGuid(), "n", RuleTypes.SignalValueGreaterThan, "10", true, DateTime.UtcNow);
+        var rule = new Rule(Guid.NewGuid(), "n", RuleTypes.SignalValueGreaterThan, "10", true, false, DateTime.UtcNow);
         var signal = new Signal(Guid.NewGuid(), "src", "t", "", null, DateTime.UtcNow, DateTime.UtcNow);
 
         Assert.True(_sut.CanEvaluate(rule));

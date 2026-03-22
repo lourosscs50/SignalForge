@@ -4,7 +4,7 @@ using SignalForge.Domain;
 
 namespace SignalForge.Application.UseCases;
 
-public static class ActivateRule
+public static class ArchiveRule
 {
     public sealed class Handler(IRuleRepository rules, IRuleAuditRepository audit, IDateTimeProvider clock)
     {
@@ -14,19 +14,19 @@ public static class ActivateRule
             if (existing is null)
                 return null;
 
-            var updated = existing.Activate();
+            if (existing.IsArchived)
+                return RuleMappings.ToResponse(existing);
+
+            var updated = existing.Archive();
             await rules.UpdateAsync(updated, cancellationToken);
 
-            if (!existing.IsActive)
-            {
-                await audit.AddAsync(
-                    new RuleAuditEntry(
-                        Id: Guid.NewGuid(),
-                        RuleId: updated.Id,
-                        Action: RuleAuditActions.Activated,
-                        OccurredAtUtc: clock.UtcNow),
-                    cancellationToken);
-            }
+            await audit.AddAsync(
+                new RuleAuditEntry(
+                    Id: Guid.NewGuid(),
+                    RuleId: updated.Id,
+                    Action: RuleAuditActions.Archived,
+                    OccurredAtUtc: clock.UtcNow),
+                cancellationToken);
 
             return RuleMappings.ToResponse(updated);
         }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SignalForge.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using SignalForge.Infrastructure.Persistence;
 namespace SignalForge.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(SignalForgeDbContext))]
-    partial class SignalForgeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260322144230_AddRuleAuditEntries")]
+    partial class AddRuleAuditEntries
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -58,9 +61,6 @@ namespace SignalForge.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsArchived")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("MatchValue")
                         .IsRequired()
                         .HasMaxLength(512)
@@ -79,8 +79,6 @@ namespace SignalForge.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("IsActive");
-
-                    b.HasIndex("IsArchived");
 
                     b.ToTable("rules", (string)null);
                 });

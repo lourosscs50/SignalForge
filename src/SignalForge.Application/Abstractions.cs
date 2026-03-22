@@ -15,6 +15,12 @@ public interface IRuleRepository
     Task<PagedResult<Rule>> ListPagedAsync(RuleListQuery query, CancellationToken cancellationToken);
 }
 
+public interface IRuleAuditRepository
+{
+    Task AddAsync(RuleAuditEntry entry, CancellationToken cancellationToken);
+    Task<IReadOnlyList<RuleAuditEntry>> ListByRuleIdAsync(Guid ruleId, CancellationToken cancellationToken);
+}
+
 public interface ISignalRepository
 {
     Task AddAsync(Signal signal, CancellationToken cancellationToken);

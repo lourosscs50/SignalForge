@@ -12,6 +12,7 @@ public sealed class SignalForgeDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Rule> Rules => Set<Rule>();
+    public DbSet<RuleAuditEntry> RuleAuditEntries => Set<RuleAuditEntry>();
     public DbSet<Signal> Signals => Set<Signal>();
     public DbSet<Alert> Alerts => Set<Alert>();
 

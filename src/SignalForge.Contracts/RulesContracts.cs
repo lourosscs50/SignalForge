@@ -7,11 +7,22 @@ public sealed record CreateRuleRequest(
     bool IsActive
 );
 
+public sealed record UpdateRuleRequest(
+    string Name,
+    string MatchValue);
+
 public sealed record RuleResponse(
     Guid Id,
     string Name,
     string RuleType,
     string MatchValue,
     bool IsActive,
+    bool IsArchived,
     DateTimeOffset CreatedAtUtc
 );
+
+public sealed record RuleAuditEntryResponse(
+    Guid Id,
+    Guid RuleId,
+    string Action,
+    DateTimeOffset OccurredAtUtc);
