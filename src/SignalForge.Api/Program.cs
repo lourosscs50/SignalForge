@@ -43,6 +43,7 @@ builder.Services.AddTransient<UpdateRule.Handler>();
 builder.Services.AddTransient<ActivateRule.Handler>();
 builder.Services.AddTransient<DeactivateRule.Handler>();
 builder.Services.AddTransient<ArchiveRule.Handler>();
+builder.Services.AddTransient<UnarchiveRule.Handler>();
 builder.Services.AddTransient<RegisterUser.Handler>();
 builder.Services.AddTransient<LoginUser.Handler>();
 builder.Services.AddTransient<GetCurrentUser.Handler>();

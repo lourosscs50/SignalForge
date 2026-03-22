@@ -71,6 +71,12 @@ public static class RuleEndpoints
             return result is null ? Results.NotFound() : Results.Ok(result);
         }).RequireAuthorization();
 
+        group.MapPost("/{id:guid}/unarchive", async (Guid id, UnarchiveRule.Handler handler, CancellationToken ct) =>
+        {
+            var result = await handler.HandleAsync(id, ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        }).RequireAuthorization();
+
         return app;
     }
 }

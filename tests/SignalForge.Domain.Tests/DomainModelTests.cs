@@ -124,6 +124,46 @@ public sealed class DomainModelTests
     }
 
     [Fact]
+    public void Rule_Unarchive_clears_archive_and_keeps_inactive()
+    {
+        var id = Guid.NewGuid();
+        var t = DateTime.UtcNow;
+        var r = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", false, true, t);
+
+        var u = r.Unarchive();
+
+        Assert.False(u.IsArchived);
+        Assert.False(u.IsActive);
+        Assert.Equal(id, u.Id);
+        Assert.Equal(t, u.CreatedAtUtc);
+    }
+
+    [Fact]
+    public void Rule_Unarchive_is_idempotent_when_not_archived()
+    {
+        var id = Guid.NewGuid();
+        var t = DateTime.UtcNow;
+        var r = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", false, false, t);
+
+        var u = r.Unarchive();
+        Assert.Same(r, u);
+    }
+
+    [Fact]
+    public void Rule_Unarchive_then_Activate_succeeds()
+    {
+        var id = Guid.NewGuid();
+        var t = DateTime.UtcNow;
+        var archived = new Rule(id, "n", RuleTypes.SignalTypeEquals, "x", false, true, t);
+
+        var restored = archived.Unarchive();
+        var active = restored.Activate();
+
+        Assert.True(active.IsActive);
+        Assert.False(active.IsArchived);
+    }
+
+    [Fact]
     public void Alert_links_SignalId_and_RuleId()
     {
         var alertId = Guid.NewGuid();

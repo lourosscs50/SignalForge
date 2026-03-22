@@ -7,4 +7,5 @@ public static class RuleAuditActions
     public const string Deactivated = "Deactivated";
     public const string Updated = "Updated";
     public const string Archived = "Archived";
+    public const string Unarchived = "Unarchived";
 }

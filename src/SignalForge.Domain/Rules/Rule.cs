@@ -28,6 +28,10 @@ public sealed record Rule(
     public Rule Archive() =>
         IsArchived ? this : this with { IsArchived = true, IsActive = false };
 
+    /// <summary>Clears archival so the rule may be activated again. Sets <see cref="IsArchived"/> to false and <see cref="IsActive"/> to false. Idempotent when not archived.</summary>
+    public Rule Unarchive() =>
+        !IsArchived ? this : this with { IsArchived = false, IsActive = false };
+
     /// <summary>Updates operator-maintained fields. Preserves <see cref="Id"/>, <see cref="RuleType"/>, <see cref="IsActive"/>, <see cref="IsArchived"/>, and <see cref="CreatedAtUtc"/>.</summary>
     public Rule UpdateDetails(string name, string matchValue) =>
         this with { Name = name, MatchValue = matchValue };
