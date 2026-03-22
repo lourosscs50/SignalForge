@@ -21,8 +21,15 @@ public sealed record RuleResponse(
     DateTimeOffset CreatedAtUtc
 );
 
+public sealed record RuleAuditUpdateDetailResponse(
+    string PreviousName,
+    string NewName,
+    string PreviousMatchValue,
+    string NewMatchValue);
+
 public sealed record RuleAuditEntryResponse(
     Guid Id,
     Guid RuleId,
     string Action,
-    DateTimeOffset OccurredAtUtc);
+    DateTimeOffset OccurredAtUtc,
+    RuleAuditUpdateDetailResponse? UpdateDetail = null);

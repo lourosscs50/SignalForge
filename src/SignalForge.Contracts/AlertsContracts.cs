@@ -7,18 +7,22 @@ public sealed record AlertResponse(
     DateTimeOffset CreatedAtUtc
 );
 
-/// <summary>Lightweight rule context for alert detail reads.</summary>
+/// <summary>Lightweight rule context for alert detail reads (current rule state).</summary>
 public sealed record AlertRuleSummary(
     Guid Id,
     string Name,
     string RuleType,
-    bool IsActive);
+    string MatchValue,
+    bool IsActive,
+    bool IsArchived,
+    DateTimeOffset CreatedAtUtc);
 
 /// <summary>Lightweight signal context for alert detail reads.</summary>
 public sealed record AlertSignalSummary(
     Guid Id,
     string Source,
     string Type,
+    double? Value,
     DateTimeOffset OccurredAtUtc);
 
 /// <summary>Single-alert read with linked rule and signal visibility (get-by-id).</summary>

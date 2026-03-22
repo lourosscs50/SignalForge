@@ -1,3 +1,4 @@
+using SignalForge.Application;
 using SignalForge.Contracts.Alerts;
 
 namespace SignalForge.Application.UseCases;
@@ -25,16 +26,8 @@ public static class GetAlert
                 SignalId: alert.SignalId,
                 RuleId: alert.RuleId,
                 CreatedAtUtc: new DateTimeOffset(alert.CreatedAtUtc, TimeSpan.Zero),
-                Rule: new AlertRuleSummary(
-                    rule.Id,
-                    rule.Name,
-                    rule.RuleType,
-                    rule.IsActive),
-                Signal: new AlertSignalSummary(
-                    signal.Id,
-                    signal.Source,
-                    signal.Type,
-                    new DateTimeOffset(signal.OccurredAtUtc, TimeSpan.Zero)));
+                Rule: AlertDetailMappings.ToAlertRuleSummary(rule),
+                Signal: AlertDetailMappings.ToAlertSignalSummary(signal));
         }
     }
 }

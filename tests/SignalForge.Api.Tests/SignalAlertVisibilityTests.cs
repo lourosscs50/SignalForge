@@ -96,12 +96,17 @@ public sealed class SignalAlertVisibilityTests
         Assert.Equal(ruleId, rule.GetProperty("id").GetGuid());
         Assert.Equal("Lineage Rule", rule.GetProperty("name").GetString());
         Assert.Equal("SignalTypeEquals", rule.GetProperty("ruleType").GetString());
+        Assert.Equal("heat", rule.GetProperty("matchValue").GetString());
         Assert.True(rule.GetProperty("isActive").GetBoolean());
+        Assert.False(rule.GetProperty("isArchived").GetBoolean());
+        Assert.NotEqual(default, rule.GetProperty("createdAtUtc").GetDateTimeOffset());
 
         var signal = detail.RootElement.GetProperty("signal");
         Assert.Equal(signalId, signal.GetProperty("id").GetGuid());
         Assert.Equal("boiler-1", signal.GetProperty("source").GetString());
         Assert.Equal("heat", signal.GetProperty("type").GetString());
+        Assert.Equal(JsonValueKind.Null, signal.GetProperty("value").ValueKind);
+        Assert.NotEqual(default, signal.GetProperty("occurredAtUtc").GetDateTimeOffset());
     }
 
     [Fact]

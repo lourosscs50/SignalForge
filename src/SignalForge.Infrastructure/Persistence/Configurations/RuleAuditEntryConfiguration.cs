@@ -22,6 +22,16 @@ public sealed class RuleAuditEntryConfiguration : IEntityTypeConfiguration<RuleA
         builder.Property(e => e.OccurredAtUtc)
             .IsRequired();
 
+        builder.OwnsOne(e => e.UpdateDetail, od =>
+        {
+            od.Property(d => d.PreviousName).HasColumnName("update_previous_name").HasMaxLength(500);
+            od.Property(d => d.NewName).HasColumnName("update_new_name").HasMaxLength(500);
+            od.Property(d => d.PreviousMatchValue).HasColumnName("update_previous_match_value").HasMaxLength(512);
+            od.Property(d => d.NewMatchValue).HasColumnName("update_new_match_value").HasMaxLength(512);
+        });
+
+        builder.Navigation(e => e.UpdateDetail).IsRequired(false);
+
         builder.HasIndex(e => e.RuleId);
 
         builder.HasOne<Rule>()

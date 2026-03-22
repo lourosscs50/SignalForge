@@ -21,6 +21,12 @@ public static class UpdateRule
             var matchValue = RuleValidation.NormalizeRequiredMatchValue(request.MatchValue, nameof(request));
             RuleValidation.ValidateMatchValueForCanonicalRuleType(existing.RuleType, matchValue, nameof(request));
 
+            if (string.Equals(existing.Name, name, StringComparison.Ordinal)
+                && string.Equals(existing.MatchValue, matchValue, StringComparison.Ordinal))
+            {
+                return RuleMappings.ToResponse(existing);
+            }
+
             var updated = existing.UpdateDetails(name, matchValue);
             await rules.UpdateAsync(updated, cancellationToken);
 
@@ -29,7 +35,12 @@ public static class UpdateRule
                     Id: Guid.NewGuid(),
                     RuleId: updated.Id,
                     Action: RuleAuditActions.Updated,
-                    OccurredAtUtc: clock.UtcNow),
+                    OccurredAtUtc: clock.UtcNow,
+                    UpdateDetail: new RuleAuditUpdateDetail(
+                        PreviousName: existing.Name,
+                        NewName: name,
+                        PreviousMatchValue: existing.MatchValue,
+                        NewMatchValue: matchValue)),
                 cancellationToken);
 
             return RuleMappings.ToResponse(updated);

@@ -79,6 +79,32 @@ public sealed class UpdateRuleValidationTests
         Assert.Equal("42.5", response.MatchValue);
         var updated = Assert.Single(audit.Entries);
         Assert.Equal(RuleAuditActions.Updated, updated.Action);
+        Assert.NotNull(updated.UpdateDetail);
+        Assert.Equal("n", updated.UpdateDetail.PreviousName);
+        Assert.Equal("Name", updated.UpdateDetail.NewName);
+        Assert.Equal("10", updated.UpdateDetail.PreviousMatchValue);
+        Assert.Equal("42.5", updated.UpdateDetail.NewMatchValue);
+    }
+
+    [Fact]
+    public async Task No_op_update_does_not_write_audit_or_call_update()
+    {
+        var id = Guid.NewGuid();
+        var rule = new Rule(id, "SameName", RuleTypes.SignalTypeEquals, "mv", true, false, DateTime.UtcNow);
+        var audit = new FakeRuleAuditRepository();
+        var handler = new UpdateRule.Handler(
+            new FakeRuleRepository(rule),
+            audit,
+            new FixedClock(DateTime.UtcNow));
+
+        var response = await handler.HandleAsync(
+            id,
+            new UpdateRuleRequest("SameName", "mv"),
+            CancellationToken.None);
+
+        Assert.NotNull(response);
+        Assert.Equal("SameName", response.Name);
+        Assert.Empty(audit.Entries);
     }
 
     private sealed class FixedClock(DateTime utc) : IDateTimeProvider

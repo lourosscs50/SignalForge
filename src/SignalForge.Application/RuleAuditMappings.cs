@@ -10,5 +10,12 @@ internal static class RuleAuditMappings
             entry.Id,
             entry.RuleId,
             entry.Action,
-            new DateTimeOffset(entry.OccurredAtUtc, TimeSpan.Zero));
+            new DateTimeOffset(entry.OccurredAtUtc, TimeSpan.Zero),
+            entry.UpdateDetail is null
+                ? null
+                : new RuleAuditUpdateDetailResponse(
+                    entry.UpdateDetail.PreviousName,
+                    entry.UpdateDetail.NewName,
+                    entry.UpdateDetail.PreviousMatchValue,
+                    entry.UpdateDetail.NewMatchValue));
 }
