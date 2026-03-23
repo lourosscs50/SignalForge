@@ -32,6 +32,7 @@ public interface IAlertRepository
 {
     Task AddAsync(Alert alert, CancellationToken cancellationToken);
     Task<Alert?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+    Task UpdateAsync(Alert alert, CancellationToken cancellationToken);
     Task<PagedResult<Alert>> ListPagedAsync(AlertListQuery query, CancellationToken cancellationToken);
 }
 

@@ -1,3 +1,4 @@
+using SignalForge.Application;
 using SignalForge.Application.Queries;
 using SignalForge.Contracts;
 using SignalForge.Contracts.Alerts;
@@ -21,13 +22,7 @@ public static class ListAlerts
 
             var paged = await alerts.ListPagedAsync(normalized, cancellationToken);
 
-            var items = paged.Items
-                .Select(a => new AlertResponse(
-                    Id: a.Id,
-                    SignalId: a.SignalId,
-                    RuleId: a.RuleId,
-                    CreatedAtUtc: new DateTimeOffset(a.CreatedAtUtc, TimeSpan.Zero)))
-                .ToList();
+            var items = paged.Items.Select(AlertMappings.ToAlertResponse).ToList();
 
             return new PagedResult<AlertResponse>(items, paged.Page, paged.PageSize, paged.TotalCount);
         }

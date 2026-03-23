@@ -21,6 +21,12 @@ public sealed class EfAlertRepository(SignalForgeDbContext db) : IAlertRepositor
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
     }
 
+    public async Task UpdateAsync(Alert alert, CancellationToken cancellationToken)
+    {
+        db.Alerts.Update(alert);
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<PagedResult<Alert>> ListPagedAsync(AlertListQuery query, CancellationToken cancellationToken)
     {
         var page = query.Page;

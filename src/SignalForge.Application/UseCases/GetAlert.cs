@@ -26,6 +26,10 @@ public static class GetAlert
                 SignalId: alert.SignalId,
                 RuleId: alert.RuleId,
                 CreatedAtUtc: new DateTimeOffset(alert.CreatedAtUtc, TimeSpan.Zero),
+                IsAcknowledged: alert.IsAcknowledged,
+                AcknowledgedAtUtc: alert.AcknowledgedAtUtc.HasValue
+                    ? new DateTimeOffset(alert.AcknowledgedAtUtc.Value, TimeSpan.Zero)
+                    : null,
                 Rule: AlertDetailMappings.ToAlertRuleSummary(rule),
                 Signal: AlertDetailMappings.ToAlertSignalSummary(signal));
         }

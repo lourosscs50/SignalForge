@@ -36,6 +36,7 @@ builder.Services.AddTransient<ListAlerts.Handler>();
 builder.Services.AddTransient<ListSignals.Handler>();
 builder.Services.AddTransient<GetSignal.Handler>();
 builder.Services.AddTransient<GetAlert.Handler>();
+builder.Services.AddTransient<AcknowledgeAlert.Handler>();
 builder.Services.AddTransient<ListRules.Handler>();
 builder.Services.AddTransient<GetRule.Handler>();
 builder.Services.AddTransient<GetRuleAudit.Handler>();

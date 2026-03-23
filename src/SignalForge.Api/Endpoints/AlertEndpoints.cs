@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using SignalForge.Application.Queries;
 using SignalForge.Application.UseCases;
@@ -36,7 +37,11 @@ public static class AlertEndpoints
             var result = await handler.HandleAsync(id, ct);
             return result is null ? Results.NotFound() : Results.Ok(result);
         });
-        group.MapPost("/{id:guid}/acknowledge", () => Results.StatusCode(StatusCodes.Status501NotImplemented));
+        group.MapPost("/{id:guid}/acknowledge", async (Guid id, AcknowledgeAlert.Handler handler, CancellationToken ct) =>
+        {
+            var result = await handler.HandleAsync(id, ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        }).RequireAuthorization();
         group.MapPost("/{id:guid}/resolve", () => Results.StatusCode(StatusCodes.Status501NotImplemented));
 
         return app;

@@ -175,4 +175,31 @@ public sealed class DomainModelTests
         Assert.Equal(signalId, a.SignalId);
         Assert.Equal(ruleId, a.RuleId);
     }
+
+    [Fact]
+    public void Alert_Acknowledge_sets_IsAcknowledged_and_AcknowledgedAtUtc()
+    {
+        var t0 = new DateTime(2025, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+        var ackAt = new DateTime(2025, 6, 7, 8, 9, 10, DateTimeKind.Utc);
+        var a = new Alert(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), t0);
+
+        var ack = a.Acknowledge(ackAt);
+
+        Assert.True(ack.IsAcknowledged);
+        Assert.Equal(ackAt, ack.AcknowledgedAtUtc);
+        Assert.Equal(t0, ack.CreatedAtUtc);
+    }
+
+    [Fact]
+    public void Alert_Acknowledge_is_idempotent_and_preserves_first_AcknowledgedAtUtc()
+    {
+        var first = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var second = new DateTime(2025, 12, 31, 23, 59, 59, DateTimeKind.Utc);
+        var a = new Alert(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
+        var once = a.Acknowledge(first);
+        var twice = once.Acknowledge(second);
+
+        Assert.Same(once, twice);
+        Assert.Equal(first, twice.AcknowledgedAtUtc);
+    }
 }
