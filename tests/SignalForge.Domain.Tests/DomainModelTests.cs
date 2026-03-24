@@ -202,4 +202,47 @@ public sealed class DomainModelTests
         Assert.Same(once, twice);
         Assert.Equal(first, twice.AcknowledgedAtUtc);
     }
+
+    [Fact]
+    public void Alert_Resolve_sets_IsResolved_and_ResolvedAtUtc_and_acknowledges_if_needed()
+    {
+        var created = new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc);
+        var resAt = new DateTime(2025, 8, 15, 12, 0, 0, DateTimeKind.Utc);
+        var a = new Alert(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), created);
+
+        var r = a.Resolve(resAt);
+
+        Assert.True(r.IsResolved);
+        Assert.Equal(resAt, r.ResolvedAtUtc);
+        Assert.True(r.IsAcknowledged);
+        Assert.Equal(resAt, r.AcknowledgedAtUtc);
+        Assert.Equal(created, r.CreatedAtUtc);
+    }
+
+    [Fact]
+    public void Alert_Resolve_preserves_AcknowledgedAtUtc_when_already_acknowledged()
+    {
+        var ackAt = new DateTime(2025, 1, 10, 0, 0, 0, DateTimeKind.Utc);
+        var resAt = new DateTime(2025, 2, 20, 0, 0, 0, DateTimeKind.Utc);
+        var a = new Alert(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
+        var acked = a.Acknowledge(ackAt);
+        var resolved = acked.Resolve(resAt);
+
+        Assert.True(resolved.IsResolved);
+        Assert.Equal(resAt, resolved.ResolvedAtUtc);
+        Assert.Equal(ackAt, resolved.AcknowledgedAtUtc);
+    }
+
+    [Fact]
+    public void Alert_Resolve_is_idempotent_and_preserves_ResolvedAtUtc()
+    {
+        var first = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var second = new DateTime(2025, 12, 31, 23, 59, 59, DateTimeKind.Utc);
+        var a = new Alert(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
+        var once = a.Resolve(first);
+        var twice = once.Resolve(second);
+
+        Assert.Same(once, twice);
+        Assert.Equal(first, twice.ResolvedAtUtc);
+    }
 }

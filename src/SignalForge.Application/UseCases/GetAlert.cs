@@ -30,6 +30,10 @@ public static class GetAlert
                 AcknowledgedAtUtc: alert.AcknowledgedAtUtc.HasValue
                     ? new DateTimeOffset(alert.AcknowledgedAtUtc.Value, TimeSpan.Zero)
                     : null,
+                IsResolved: alert.IsResolved,
+                ResolvedAtUtc: alert.ResolvedAtUtc.HasValue
+                    ? new DateTimeOffset(alert.ResolvedAtUtc.Value, TimeSpan.Zero)
+                    : null,
                 Rule: AlertDetailMappings.ToAlertRuleSummary(rule),
                 Signal: AlertDetailMappings.ToAlertSignalSummary(signal));
         }

@@ -6,7 +6,9 @@ public sealed record AlertResponse(
     Guid RuleId,
     DateTimeOffset CreatedAtUtc,
     bool IsAcknowledged,
-    DateTimeOffset? AcknowledgedAtUtc);
+    DateTimeOffset? AcknowledgedAtUtc,
+    bool IsResolved,
+    DateTimeOffset? ResolvedAtUtc);
 
 /// <summary>Lightweight rule context for alert detail reads (current rule state).</summary>
 public sealed record AlertRuleSummary(
@@ -34,5 +36,7 @@ public sealed record AlertDetailResponse(
     DateTimeOffset CreatedAtUtc,
     bool IsAcknowledged,
     DateTimeOffset? AcknowledgedAtUtc,
+    bool IsResolved,
+    DateTimeOffset? ResolvedAtUtc,
     AlertRuleSummary Rule,
     AlertSignalSummary Signal);

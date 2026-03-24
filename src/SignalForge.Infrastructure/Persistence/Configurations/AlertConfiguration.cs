@@ -26,6 +26,11 @@ public sealed class AlertConfiguration : IEntityTypeConfiguration<Alert>
 
         builder.Property(a => a.AcknowledgedAtUtc);
 
+        builder.Property(a => a.IsResolved)
+            .IsRequired();
+
+        builder.Property(a => a.ResolvedAtUtc);
+
         builder.HasIndex(a => a.SignalId);
         builder.HasIndex(a => a.RuleId);
 
