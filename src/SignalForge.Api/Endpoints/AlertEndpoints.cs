@@ -51,6 +51,11 @@ public static class AlertEndpoints
             var result = await handler.HandleAsync(id, ct);
             return result is null ? Results.NotFound() : Results.Ok(result);
         }).RequireAuthorization();
+        group.MapPost("/{id:guid}/reopen", async (Guid id, ReopenAlert.Handler handler, CancellationToken ct) =>
+        {
+            var result = await handler.HandleAsync(id, ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        }).RequireAuthorization();
 
         return app;
     }

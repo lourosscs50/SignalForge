@@ -245,4 +245,29 @@ public sealed class DomainModelTests
         Assert.Same(once, twice);
         Assert.Equal(first, twice.ResolvedAtUtc);
     }
+
+    [Fact]
+    public void Alert_Reopen_clears_resolution_and_preserves_acknowledgment()
+    {
+        var ackAt = new DateTime(2025, 4, 1, 0, 0, 0, DateTimeKind.Utc);
+        var resAt = new DateTime(2025, 5, 1, 0, 0, 0, DateTimeKind.Utc);
+        var a = new Alert(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
+        var resolved = a.Acknowledge(ackAt).Resolve(resAt);
+
+        var reopened = resolved.Reopen();
+
+        Assert.False(reopened.IsResolved);
+        Assert.Null(reopened.ResolvedAtUtc);
+        Assert.True(reopened.IsAcknowledged);
+        Assert.Equal(ackAt, reopened.AcknowledgedAtUtc);
+    }
+
+    [Fact]
+    public void Alert_Reopen_is_idempotent_when_already_unresolved()
+    {
+        var a = new Alert(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
+        var acked = a.Acknowledge(DateTime.UtcNow);
+
+        Assert.Same(acked, acked.Reopen());
+    }
 }

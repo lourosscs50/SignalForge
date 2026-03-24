@@ -26,4 +26,8 @@ public sealed record Alert(
                 IsAcknowledged = true,
                 AcknowledgedAtUtc = IsAcknowledged ? AcknowledgedAtUtc : utcNow
             };
+
+    /// <summary>Clears resolution so the alert returns to unresolved work. Idempotent when already unresolved. Preserves acknowledgment and <see cref="AcknowledgedAtUtc"/>.</summary>
+    public Alert Reopen() =>
+        IsResolved ? this with { IsResolved = false, ResolvedAtUtc = null } : this;
 }
