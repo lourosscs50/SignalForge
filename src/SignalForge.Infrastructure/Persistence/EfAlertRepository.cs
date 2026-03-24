@@ -49,6 +49,9 @@ public sealed class EfAlertRepository(SignalForgeDbContext db) : IAlertRepositor
         if (query.IsAcknowledged.HasValue)
             q = q.Where(a => a.IsAcknowledged == query.IsAcknowledged.Value);
 
+        if (query.IsResolved.HasValue)
+            q = q.Where(a => a.IsResolved == query.IsResolved.Value);
+
         var total = await q.CountAsync(cancellationToken);
         var items = await q
             .OrderByDescending(a => a.CreatedAtUtc)

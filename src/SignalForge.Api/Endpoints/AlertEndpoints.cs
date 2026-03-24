@@ -20,6 +20,7 @@ public static class AlertEndpoints
             DateTime? fromCreatedUtc,
             DateTime? toCreatedUtc,
             bool? isAcknowledged,
+            bool? isResolved,
             ListAlerts.Handler handler,
             CancellationToken ct) =>
         {
@@ -30,7 +31,8 @@ public static class AlertEndpoints
                 signalId,
                 fromCreatedUtc,
                 toCreatedUtc,
-                isAcknowledged);
+                isAcknowledged,
+                isResolved);
             var result = await handler.HandleAsync(query, ct);
             return Results.Ok(result);
         });

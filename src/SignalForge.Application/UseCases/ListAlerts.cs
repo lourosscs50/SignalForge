@@ -19,7 +19,8 @@ public static class ListAlerts
                 query.SignalId,
                 query.FromCreatedUtc,
                 query.ToCreatedUtc,
-                query.IsAcknowledged);
+                query.IsAcknowledged,
+                query.IsResolved);
 
             var paged = await alerts.ListPagedAsync(normalized, cancellationToken);
 
