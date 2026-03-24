@@ -22,5 +22,5 @@ public sealed record AlertListQuery(
     Guid? RuleId,
     Guid? SignalId,
     DateTime? FromCreatedUtc,
-    DateTime? ToCreatedUtc
-);
+    DateTime? ToCreatedUtc,
+    bool? IsAcknowledged);
