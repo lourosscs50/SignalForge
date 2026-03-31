@@ -7,7 +7,7 @@ namespace SignalForge.Api.Tests;
 
 /// <summary>
 /// Phase 4.8: lifecycle combination views on GET /alerts (no new query params; existing booleans + ruleId/signalId/time).
-/// Lifecycle truth: new = unack+unres; ack+unres = work queue; resolved = ack+res; reopened = ack+unres with ack preserved.
+/// Lifecycle truth: new = unack+unres; ack+unres = work queue; resolved may be unacked or acked; reopened restores unres with ack unchanged.
 /// </summary>
 public sealed class AlertLifecycleQueryCoverageTests
 {
@@ -83,7 +83,7 @@ public sealed class AlertLifecycleQueryCoverageTests
     }
 
     [Fact]
-    public async Task C_Resolved_list_returns_only_resolved_and_all_are_acknowledged()
+    public async Task C_Resolved_list_returns_only_resolved_alerts_resolution_does_not_require_ack()
     {
         using var app = new SignalForgeWebAppFactory();
         var client = SignalForgeApiTestHelpers.CreateClient(app);
@@ -108,11 +108,9 @@ public sealed class AlertLifecycleQueryCoverageTests
         r.EnsureSuccessStatusCode();
         using var doc = JsonDocument.Parse(await r.Content.ReadAsStringAsync());
         Assert.Equal(1, doc.RootElement.GetProperty("totalCount").GetInt32());
-        foreach (var el in doc.RootElement.GetProperty("items").EnumerateArray())
-        {
-            Assert.True(el.GetProperty("isResolved").GetBoolean());
-            Assert.True(el.GetProperty("isAcknowledged").GetBoolean());
-        }
+        var el = doc.RootElement.GetProperty("items")[0];
+        Assert.True(el.GetProperty("isResolved").GetBoolean());
+        Assert.False(el.GetProperty("isAcknowledged").GetBoolean());
     }
 
     [Fact]
@@ -135,6 +133,7 @@ public sealed class AlertLifecycleQueryCoverageTests
         list.EnsureSuccessStatusCode();
         using var listDoc = JsonDocument.Parse(await list.Content.ReadAsStringAsync());
         var id = listDoc.RootElement.GetProperty("items")[0].GetProperty("id").GetGuid();
+        await client.PostAsJsonAsync($"/alerts/{id}/acknowledge", new { });
         await client.PostAsJsonAsync($"/alerts/{id}/resolve", new { });
         await client.PostAsJsonAsync($"/alerts/{id}/reopen", new { });
 
@@ -149,7 +148,7 @@ public sealed class AlertLifecycleQueryCoverageTests
     }
 
     [Fact]
-    public async Task E_Unacknowledged_and_resolved_combination_returns_empty_set()
+    public async Task E_Unacknowledged_resolved_alerts_appear_under_isAcknowledged_false_and_isResolved_true()
     {
         using var app = new SignalForgeWebAppFactory();
         var client = SignalForgeApiTestHelpers.CreateClient(app);
@@ -164,12 +163,20 @@ public sealed class AlertLifecycleQueryCoverageTests
             isActive = true
         });
         await client.PostAsJsonAsync("/signals", new { source = "s", type = "t-lcq-e", timestampUtc = DateTimeOffset.UtcNow });
+        var list = await client.GetAsync("/alerts?pageSize=5");
+        list.EnsureSuccessStatusCode();
+        using var listDoc = JsonDocument.Parse(await list.Content.ReadAsStringAsync());
+        var id = listDoc.RootElement.GetProperty("items")[0].GetProperty("id").GetGuid();
+        await client.PostAsJsonAsync($"/alerts/{id}/resolve", new { });
 
         var r = await client.GetAsync("/alerts?isAcknowledged=false&isResolved=true&pageSize=20");
         r.EnsureSuccessStatusCode();
         using var doc = JsonDocument.Parse(await r.Content.ReadAsStringAsync());
-        Assert.Equal(0, doc.RootElement.GetProperty("totalCount").GetInt32());
-        Assert.Equal(0, doc.RootElement.GetProperty("items").GetArrayLength());
+        Assert.Equal(1, doc.RootElement.GetProperty("totalCount").GetInt32());
+        var item = doc.RootElement.GetProperty("items")[0];
+        Assert.Equal(id, item.GetProperty("id").GetGuid());
+        Assert.False(item.GetProperty("isAcknowledged").GetBoolean());
+        Assert.True(item.GetProperty("isResolved").GetBoolean());
     }
 
     [Fact]

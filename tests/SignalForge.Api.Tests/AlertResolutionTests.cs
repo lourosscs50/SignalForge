@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace SignalForge.Api.Tests;
 
-/// <summary>Phase 4.5: POST /alerts/{id}/resolve; resolution state on list/detail; coherent ack.</summary>
+/// <summary>POST /alerts/{id}/resolve; resolution does not mutate acknowledgment.</summary>
 public sealed class AlertResolutionTests
 {
     private static async Task<string> Auth(HttpClient client, string email) =>
@@ -48,7 +48,7 @@ public sealed class AlertResolutionTests
     }
 
     [Fact]
-    public async Task B_C_D_Resolve_sets_IsResolved_ResolvedAtUtc_and_acknowledges_unacked_alert()
+    public async Task B_C_D_Resolve_sets_IsResolved_and_ResolvedAtUtc_without_acknowledging()
     {
         using var app = new SignalForgeWebAppFactory();
         var client = SignalForgeApiTestHelpers.CreateClient(app);
@@ -63,8 +63,8 @@ public sealed class AlertResolutionTests
         Assert.True(doc.RootElement.GetProperty("isResolved").GetBoolean());
         var resolvedAt = doc.RootElement.GetProperty("resolvedAtUtc").GetDateTimeOffset();
         Assert.NotEqual(default, resolvedAt);
-        Assert.True(doc.RootElement.GetProperty("isAcknowledged").GetBoolean());
-        Assert.Equal(resolvedAt, doc.RootElement.GetProperty("acknowledgedAtUtc").GetDateTimeOffset());
+        Assert.False(doc.RootElement.GetProperty("isAcknowledged").GetBoolean());
+        Assert.Equal(JsonValueKind.Null, doc.RootElement.GetProperty("acknowledgedAtUtc").ValueKind);
     }
 
     [Fact]

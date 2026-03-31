@@ -5,7 +5,7 @@ namespace SignalForge.Application.UseCases;
 
 public static class ResolveAlert
 {
-    public sealed class Handler(IAlertRepository alerts, IDateTimeProvider clock)
+    public sealed class Handler(IAlertRepository alerts, IDateTimeProvider clock, ICurrentUser currentUser)
     {
         public async Task<AlertResponse?> HandleAsync(Guid id, CancellationToken cancellationToken)
         {
@@ -13,10 +13,12 @@ public static class ResolveAlert
             if (alert is null)
                 return null;
 
+            var actorUserId = currentUser.RequireUserId();
+
             if (alert.IsResolved)
                 return AlertMappings.ToAlertResponse(alert);
 
-            var updated = alert.Resolve(clock.UtcNow);
+            var updated = alert.Resolve(clock.UtcNow, actorUserId);
             await alerts.UpdateAsync(updated, cancellationToken);
             return AlertMappings.ToAlertResponse(updated);
         }

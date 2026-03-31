@@ -17,9 +17,11 @@ public sealed class JwtTokenService : ITokenService
             key,
             SecurityAlgorithms.HmacSha256);
 
+        var idString = user.Id.ToString();
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, idString),
+            new Claim(JwtRegisteredClaimNames.Sub, idString),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Name, user.DisplayName)
         };

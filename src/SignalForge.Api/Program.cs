@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using SignalForge.Api.Authentication;
 using SignalForge.Api.Endpoints;
 using SignalForge.Application;
 using SignalForge.Application.Evaluation;
@@ -22,6 +23,8 @@ builder.Services.AddSignalForgePersistence(builder.Configuration, builder.Enviro
 builder.Services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
 builder.Services.AddSingleton<ITokenService, JwtTokenService>();
 builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
 
 // Rule evaluation (strategy + orchestration)
 builder.Services.AddSingleton<IRuleEvaluator, SignalTypeEqualsRuleEvaluator>();
@@ -112,9 +115,14 @@ app.Use(async (context, next) =>
     catch (InvalidOperationException ex)
     {
         var message = ex.Message ?? string.Empty;
-        context.Response.StatusCode = message.Contains("Invalid credentials", StringComparison.OrdinalIgnoreCase)
-            ? StatusCodes.Status401Unauthorized
-            : StatusCodes.Status400BadRequest;
+        var statusCode = StatusCodes.Status400BadRequest;
+        if (message.Contains("Invalid credentials", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("Authenticated actor identity is required", StringComparison.OrdinalIgnoreCase))
+        {
+            statusCode = StatusCodes.Status401Unauthorized;
+        }
+
+        context.Response.StatusCode = statusCode;
         await context.Response.WriteAsJsonAsync(new { error = message });
     }
 });

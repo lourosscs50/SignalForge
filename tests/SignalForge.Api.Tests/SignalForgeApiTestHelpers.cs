@@ -7,7 +7,7 @@ namespace SignalForge.Api.Tests;
 
 internal static class SignalForgeApiTestHelpers
 {
-    public static HttpClient CreateClient(SignalForgeWebAppFactory app) =>
+    public static HttpClient CreateClient(WebApplicationFactory<Program> app) =>
         app.CreateClient(new WebApplicationFactoryClientOptions
         {
             AllowAutoRedirect = false
@@ -48,5 +48,15 @@ internal static class SignalForgeApiTestHelpers
         Assert.True(handler.CanReadToken(token), $"Returned token is not a readable JWT. Raw body: {body}");
 
         return token;
+    }
+
+    /// <summary>JWT <c>sub</c> / NameIdentifier for the authenticated user (matches lifecycle attribution).</summary>
+    public static string GetJwtSubject(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(token);
+        return jwt.Subject
+            ?? jwt.Claims.FirstOrDefault(c => c.Type is "sub" or "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value
+            ?? throw new InvalidOperationException("Token has no subject claim.");
     }
 }

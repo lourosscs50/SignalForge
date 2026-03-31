@@ -60,6 +60,13 @@ public interface IDateTimeProvider
     DateTime UtcNow { get; }
 }
 
+/// <summary>Authenticated actor for lifecycle mutations (transport-agnostic).</summary>
+public interface ICurrentUser
+{
+    /// <summary>Stable user identifier (e.g. JWT sub). Null when unavailable or unauthenticated.</summary>
+    string? UserId { get; }
+}
+
 /// <summary>Strategy for evaluating a single rule style against a signal.</summary>
 public interface IRuleEvaluator
 {

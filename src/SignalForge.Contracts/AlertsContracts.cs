@@ -7,8 +7,12 @@ public sealed record AlertResponse(
     DateTimeOffset CreatedAtUtc,
     bool IsAcknowledged,
     DateTimeOffset? AcknowledgedAtUtc,
+    string? AcknowledgedByUserId,
     bool IsResolved,
-    DateTimeOffset? ResolvedAtUtc);
+    DateTimeOffset? ResolvedAtUtc,
+    string? ResolvedByUserId,
+    DateTimeOffset? ReopenedAtUtc,
+    string? ReopenedByUserId);
 
 /// <summary>Lightweight rule context for alert detail reads (current rule state).</summary>
 public sealed record AlertRuleSummary(
@@ -36,7 +40,11 @@ public sealed record AlertDetailResponse(
     DateTimeOffset CreatedAtUtc,
     bool IsAcknowledged,
     DateTimeOffset? AcknowledgedAtUtc,
+    string? AcknowledgedByUserId,
     bool IsResolved,
     DateTimeOffset? ResolvedAtUtc,
+    string? ResolvedByUserId,
+    DateTimeOffset? ReopenedAtUtc,
+    string? ReopenedByUserId,
     AlertRuleSummary Rule,
     AlertSignalSummary Signal);

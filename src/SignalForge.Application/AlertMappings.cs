@@ -15,8 +15,14 @@ internal static class AlertMappings
             alert.AcknowledgedAtUtc.HasValue
                 ? new DateTimeOffset(alert.AcknowledgedAtUtc.Value, TimeSpan.Zero)
                 : null,
+            alert.AcknowledgedByUserId,
             alert.IsResolved,
             alert.ResolvedAtUtc.HasValue
                 ? new DateTimeOffset(alert.ResolvedAtUtc.Value, TimeSpan.Zero)
-                : null);
+                : null,
+            alert.ResolvedByUserId,
+            alert.ReopenedAtUtc.HasValue
+                ? new DateTimeOffset(alert.ReopenedAtUtc.Value, TimeSpan.Zero)
+                : null,
+            alert.ReopenedByUserId);
 }
