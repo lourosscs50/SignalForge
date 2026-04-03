@@ -34,6 +34,8 @@ public interface IAlertRepository
     Task<Alert?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
     Task UpdateAsync(Alert alert, CancellationToken cancellationToken);
     Task<PagedResult<Alert>> ListPagedAsync(AlertListQuery query, CancellationToken cancellationToken);
+    Task<IReadOnlyList<Alert>> ListAllAsync(CancellationToken cancellationToken);
+    Task<IReadOnlyList<Alert>> ListByRuleIdAsync(Guid ruleId, CancellationToken cancellationToken);
 }
 
 // Identity/crypto abstractions (technical, not transport-specific).

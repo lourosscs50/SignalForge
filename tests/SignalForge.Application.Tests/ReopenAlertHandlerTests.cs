@@ -44,6 +44,12 @@ public sealed class ReopenAlertHandlerTests
 
         public Task<PagedResult<Alert>> ListPagedAsync(AlertListQuery query, CancellationToken cancellationToken) =>
             Task.FromResult(new PagedResult<Alert>([], query.Page, query.PageSize, 0));
+
+        public Task<IReadOnlyList<Alert>> ListAllAsync(CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<Alert>>(Stored is null ? [] : [Stored]);
+
+        public Task<IReadOnlyList<Alert>> ListByRuleIdAsync(Guid ruleId, CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<Alert>>(Stored?.RuleId == ruleId ? [Stored!] : []);
     }
 
     [Fact]

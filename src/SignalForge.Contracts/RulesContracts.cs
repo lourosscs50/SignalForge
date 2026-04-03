@@ -21,6 +21,18 @@ public sealed record RuleResponse(
     DateTimeOffset CreatedAtUtc
 );
 
+/// <summary>Operational metrics for alerts associated with a single rule (current state only).</summary>
+public sealed record RuleMetricsSummaryResponse(
+    Guid RuleId,
+    string RuleName,
+    int TotalAlertsGenerated,
+    int OpenAlerts,
+    int AcknowledgedUnresolvedAlerts,
+    int ResolvedAlerts,
+    int ReopenedAlerts,
+    double? AverageTimeToAcknowledgeSeconds,
+    double? AverageTimeToResolveSeconds);
+
 public sealed record RuleAuditUpdateDetailResponse(
     string PreviousName,
     string NewName,

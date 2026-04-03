@@ -27,6 +27,25 @@ public sealed class EfAlertRepository(SignalForgeDbContext db) : IAlertRepositor
         await db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Alert>> ListAllAsync(CancellationToken cancellationToken)
+    {
+        return await db.Alerts
+            .AsNoTracking()
+            .OrderByDescending(a => a.CreatedAtUtc)
+            .ThenBy(a => a.Id)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Alert>> ListByRuleIdAsync(Guid ruleId, CancellationToken cancellationToken)
+    {
+        return await db.Alerts
+            .AsNoTracking()
+            .Where(a => a.RuleId == ruleId)
+            .OrderByDescending(a => a.CreatedAtUtc)
+            .ThenBy(a => a.Id)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<PagedResult<Alert>> ListPagedAsync(AlertListQuery query, CancellationToken cancellationToken)
     {
         var page = query.Page;

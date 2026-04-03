@@ -47,6 +47,12 @@ public static class RuleEndpoints
             return result is null ? Results.NotFound() : Results.Ok(result);
         }).RequireAuthorization();
 
+        group.MapGet("/{id:guid}/metrics", async (Guid id, GetRuleMetrics.Handler handler, CancellationToken ct) =>
+        {
+            var result = await handler.HandleAsync(id, ct);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        }).RequireAuthorization();
+
         group.MapPut("/{id:guid}", async (Guid id, UpdateRuleRequest request, UpdateRule.Handler handler, CancellationToken ct) =>
         {
             var result = await handler.HandleAsync(id, request, ct);

@@ -7,7 +7,7 @@ namespace SignalForge.Application.UseCases;
 
 public static class ListAlerts
 {
-    public sealed class Handler(IAlertRepository alerts)
+    public sealed class Handler(IAlertRepository alerts, IDateTimeProvider clock)
     {
         public async Task<PagedResult<AlertResponse>> HandleAsync(AlertListQuery query, CancellationToken cancellationToken)
         {
@@ -23,8 +23,8 @@ public static class ListAlerts
                 query.IsResolved);
 
             var paged = await alerts.ListPagedAsync(normalized, cancellationToken);
-
-            var items = paged.Items.Select(AlertMappings.ToAlertResponse).ToList();
+            var utcNow = clock.UtcNow;
+            var items = paged.Items.Select(a => AlertMappings.ToAlertResponse(a, utcNow)).ToList();
 
             return new PagedResult<AlertResponse>(items, paged.Page, paged.PageSize, paged.TotalCount);
         }

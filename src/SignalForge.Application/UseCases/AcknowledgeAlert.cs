@@ -15,12 +15,13 @@ public static class AcknowledgeAlert
 
             var actorUserId = currentUser.RequireUserId();
 
+            var utcNow = clock.UtcNow;
             if (alert.IsAcknowledged)
-                return AlertMappings.ToAlertResponse(alert);
+                return AlertMappings.ToAlertResponse(alert, utcNow);
 
-            var updated = alert.Acknowledge(clock.UtcNow, actorUserId);
+            var updated = alert.Acknowledge(utcNow, actorUserId);
             await alerts.UpdateAsync(updated, cancellationToken);
-            return AlertMappings.ToAlertResponse(updated);
+            return AlertMappings.ToAlertResponse(updated, utcNow);
         }
     }
 }

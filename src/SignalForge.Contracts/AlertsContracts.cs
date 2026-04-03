@@ -12,7 +12,12 @@ public sealed record AlertResponse(
     DateTimeOffset? ResolvedAtUtc,
     string? ResolvedByUserId,
     DateTimeOffset? ReopenedAtUtc,
-    string? ReopenedByUserId);
+    string? ReopenedByUserId,
+    double? TimeToAcknowledgeSeconds,
+    double? TimeToResolveSeconds,
+    bool HasBeenReopened,
+    string CurrentStatus,
+    double AgeSeconds);
 
 /// <summary>Lightweight rule context for alert detail reads (current rule state).</summary>
 public sealed record AlertRuleSummary(
@@ -46,5 +51,20 @@ public sealed record AlertDetailResponse(
     string? ResolvedByUserId,
     DateTimeOffset? ReopenedAtUtc,
     string? ReopenedByUserId,
+    double? TimeToAcknowledgeSeconds,
+    double? TimeToResolveSeconds,
+    bool HasBeenReopened,
+    string CurrentStatus,
+    double AgeSeconds,
     AlertRuleSummary Rule,
     AlertSignalSummary Signal);
+
+/// <summary>Repository-derived lifecycle metrics for operator visibility (current alert state only).</summary>
+public sealed record AlertMetricsSummaryResponse(
+    int TotalAlerts,
+    int OpenAlerts,
+    int AcknowledgedUnresolvedAlerts,
+    int ResolvedAlerts,
+    int ReopenedAlerts,
+    double? AverageTimeToAcknowledgeSeconds,
+    double? AverageTimeToResolveSeconds);

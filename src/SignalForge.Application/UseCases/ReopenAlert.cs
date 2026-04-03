@@ -15,12 +15,13 @@ public static class ReopenAlert
 
             var actorUserId = currentUser.RequireUserId();
 
+            var utcNow = clock.UtcNow;
             if (!alert.IsResolved)
-                return AlertMappings.ToAlertResponse(alert);
+                return AlertMappings.ToAlertResponse(alert, utcNow);
 
-            var updated = alert.Reopen(clock.UtcNow, actorUserId);
+            var updated = alert.Reopen(utcNow, actorUserId);
             await alerts.UpdateAsync(updated, cancellationToken);
-            return AlertMappings.ToAlertResponse(updated);
+            return AlertMappings.ToAlertResponse(updated, utcNow);
         }
     }
 }

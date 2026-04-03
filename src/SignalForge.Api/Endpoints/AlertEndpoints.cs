@@ -36,6 +36,11 @@ public static class AlertEndpoints
             var result = await handler.HandleAsync(query, ct);
             return Results.Ok(result);
         });
+        group.MapGet("/metrics", async (GetAlertMetrics.Handler handler, CancellationToken ct) =>
+        {
+            var result = await handler.HandleAsync(ct);
+            return Results.Ok(result);
+        }).RequireAuthorization();
         group.MapGet("/{id:guid}", async (Guid id, GetAlert.Handler handler, CancellationToken ct) =>
         {
             var result = await handler.HandleAsync(id, ct);
