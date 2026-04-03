@@ -8,6 +8,7 @@ using SignalForge.Application.Evaluation;
 using SignalForge.Application.UseCases;
 using SignalForge.Application.UseCases.Identity;
 using Microsoft.EntityFrameworkCore;
+using SignalForge.Infrastructure.Automation;
 using SignalForge.Infrastructure.Authentication;
 using SignalForge.Infrastructure.Persistence;
 
@@ -25,6 +26,9 @@ builder.Services.AddSingleton<ITokenService, JwtTokenService>();
 builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
+
+// Lifecycle automation publishers (config-driven: no-op, logging, ChronoFlow HTTP; see Automation:Publishing).
+builder.Services.AddSignalForgeAutomationPublishers(builder.Configuration);
 
 // Rule evaluation (strategy + orchestration)
 builder.Services.AddSingleton<IRuleEvaluator, SignalTypeEqualsRuleEvaluator>();

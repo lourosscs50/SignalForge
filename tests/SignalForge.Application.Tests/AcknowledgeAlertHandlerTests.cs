@@ -1,4 +1,5 @@
 using SignalForge.Application;
+using SignalForge.Application.Automation;
 using SignalForge.Application.Queries;
 using SignalForge.Application.UseCases;
 using SignalForge.Contracts;
@@ -52,6 +53,15 @@ public sealed class AcknowledgeAlertHandlerTests
             Task.FromResult<IReadOnlyList<Alert>>(Stored?.RuleId == ruleId ? [Stored!] : []);
     }
 
+    private static FakeRuleRepositoryForLifecycle RuleRepoFor(Alert alert) =>
+        new()
+        {
+            Rule = new Rule(alert.RuleId, "T", RuleTypes.SignalTypeEquals, "m", true, false, DateTime.UtcNow)
+        };
+
+    private static AlertLifecycleAutomationCoordinator TestCoordinator() =>
+        AutomationTestHarness.CreateCoordinator(new CapturingLifecyclePublisher(), new CapturingTriggerPublisher());
+
     [Fact]
     public async Task HandleAsync_acknowledges_with_actor_and_updates_stored_attribution()
     {
@@ -59,7 +69,12 @@ public sealed class AcknowledgeAlertHandlerTests
         var id = Guid.NewGuid();
         var alert = new Alert(id, Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
         var repos = new FakeAlertRepository { Stored = alert };
-        var handler = new AcknowledgeAlert.Handler(repos, new FixedClock(t0), new FixedCurrentUser(ActorId));
+        var handler = new AcknowledgeAlert.Handler(
+            repos,
+            new FixedClock(t0),
+            new FixedCurrentUser(ActorId),
+            RuleRepoFor(alert),
+            TestCoordinator());
 
         var result = await handler.HandleAsync(id, CancellationToken.None);
 
@@ -75,7 +90,15 @@ public sealed class AcknowledgeAlertHandlerTests
     public async Task HandleAsync_returns_null_when_alert_missing()
     {
         var repos = new FakeAlertRepository();
-        var handler = new AcknowledgeAlert.Handler(repos, new FixedClock(DateTime.UtcNow), new NullCurrentUser());
+        var handler = new AcknowledgeAlert.Handler(
+            repos,
+            new FixedClock(DateTime.UtcNow),
+            new NullCurrentUser(),
+            new FakeRuleRepositoryForLifecycle
+            {
+                Rule = new Rule(Guid.NewGuid(), "X", RuleTypes.SignalTypeEquals, "x", true, false, DateTime.UtcNow)
+            },
+            TestCoordinator());
 
         var result = await handler.HandleAsync(Guid.NewGuid(), CancellationToken.None);
 
@@ -87,8 +110,14 @@ public sealed class AcknowledgeAlertHandlerTests
     public async Task HandleAsync_throws_when_actor_missing_and_alert_exists()
     {
         var id = Guid.NewGuid();
-        var repos = new FakeAlertRepository { Stored = new Alert(id, Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow) };
-        var handler = new AcknowledgeAlert.Handler(repos, new FixedClock(DateTime.UtcNow), new NullCurrentUser());
+        var alert = new Alert(id, Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
+        var repos = new FakeAlertRepository { Stored = alert };
+        var handler = new AcknowledgeAlert.Handler(
+            repos,
+            new FixedClock(DateTime.UtcNow),
+            new NullCurrentUser(),
+            RuleRepoFor(alert),
+            TestCoordinator());
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => handler.HandleAsync(id, CancellationToken.None));
         Assert.Equal(0, repos.UpdateCount);
@@ -101,12 +130,23 @@ public sealed class AcknowledgeAlertHandlerTests
         var id = Guid.NewGuid();
         var alert = new Alert(id, Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
         var repos = new FakeAlertRepository { Stored = alert };
-        var h1 = new AcknowledgeAlert.Handler(repos, new FixedClock(firstAt), new FixedCurrentUser(ActorId));
+        var ruleRepo = RuleRepoFor(alert);
+        var h1 = new AcknowledgeAlert.Handler(
+            repos,
+            new FixedClock(firstAt),
+            new FixedCurrentUser(ActorId),
+            ruleRepo,
+            TestCoordinator());
         var r1 = await h1.HandleAsync(id, CancellationToken.None);
         Assert.Equal(1, repos.UpdateCount);
 
         var secondAt = new DateTime(2026, 12, 1, 0, 0, 0, DateTimeKind.Utc);
-        var h2 = new AcknowledgeAlert.Handler(repos, new FixedClock(secondAt), new FixedCurrentUser("other-user"));
+        var h2 = new AcknowledgeAlert.Handler(
+            repos,
+            new FixedClock(secondAt),
+            new FixedCurrentUser("other-user"),
+            ruleRepo,
+            TestCoordinator());
         var r2 = await h2.HandleAsync(id, CancellationToken.None);
 
         Assert.NotNull(r1);

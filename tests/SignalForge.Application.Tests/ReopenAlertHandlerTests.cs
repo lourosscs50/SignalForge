@@ -1,4 +1,5 @@
 using SignalForge.Application;
+using SignalForge.Application.Automation;
 using SignalForge.Application.Queries;
 using SignalForge.Application.UseCases;
 using SignalForge.Contracts;
@@ -52,6 +53,15 @@ public sealed class ReopenAlertHandlerTests
             Task.FromResult<IReadOnlyList<Alert>>(Stored?.RuleId == ruleId ? [Stored!] : []);
     }
 
+    private static FakeRuleRepositoryForLifecycle RuleRepoFor(Alert alert) =>
+        new()
+        {
+            Rule = new Rule(alert.RuleId, "T", RuleTypes.SignalTypeEquals, "m", true, false, DateTime.UtcNow)
+        };
+
+    private static AlertLifecycleAutomationCoordinator TestCoordinator() =>
+        AutomationTestHarness.CreateCoordinator(new CapturingLifecyclePublisher(), new CapturingTriggerPublisher());
+
     [Fact]
     public async Task HandleAsync_reopens_resolved_alert_and_persists_once()
     {
@@ -60,7 +70,12 @@ public sealed class ReopenAlertHandlerTests
         var id = Guid.NewGuid();
         var alert = new Alert(id, Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow).Resolve(resAt, "resolver");
         var repos = new FakeAlertRepository { Stored = alert };
-        var handler = new ReopenAlert.Handler(repos, new FixedClock(reopenAt), new FixedCurrentUser(ActorId));
+        var handler = new ReopenAlert.Handler(
+            repos,
+            new FixedClock(reopenAt),
+            new FixedCurrentUser(ActorId),
+            RuleRepoFor(alert),
+            TestCoordinator());
 
         var result = await handler.HandleAsync(id, CancellationToken.None);
 
@@ -80,7 +95,15 @@ public sealed class ReopenAlertHandlerTests
     public async Task HandleAsync_returns_null_when_alert_missing()
     {
         var repos = new FakeAlertRepository();
-        var handler = new ReopenAlert.Handler(repos, new FixedClock(DateTime.UtcNow), new NullCurrentUser());
+        var handler = new ReopenAlert.Handler(
+            repos,
+            new FixedClock(DateTime.UtcNow),
+            new NullCurrentUser(),
+            new FakeRuleRepositoryForLifecycle
+            {
+                Rule = new Rule(Guid.NewGuid(), "X", RuleTypes.SignalTypeEquals, "x", true, false, DateTime.UtcNow)
+            },
+            TestCoordinator());
 
         var result = await handler.HandleAsync(Guid.NewGuid(), CancellationToken.None);
 
@@ -94,7 +117,12 @@ public sealed class ReopenAlertHandlerTests
         var id = Guid.NewGuid();
         var resolved = new Alert(id, Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow).Resolve(DateTime.UtcNow, "x");
         var repos = new FakeAlertRepository { Stored = resolved };
-        var handler = new ReopenAlert.Handler(repos, new FixedClock(DateTime.UtcNow), new NullCurrentUser());
+        var handler = new ReopenAlert.Handler(
+            repos,
+            new FixedClock(DateTime.UtcNow),
+            new NullCurrentUser(),
+            RuleRepoFor(resolved),
+            TestCoordinator());
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => handler.HandleAsync(id, CancellationToken.None));
         Assert.Equal(0, repos.UpdateCount);
@@ -106,7 +134,12 @@ public sealed class ReopenAlertHandlerTests
         var id = Guid.NewGuid();
         var alert = new Alert(id, Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow);
         var repos = new FakeAlertRepository { Stored = alert };
-        var handler = new ReopenAlert.Handler(repos, new FixedClock(DateTime.UtcNow), new FixedCurrentUser(ActorId));
+        var handler = new ReopenAlert.Handler(
+            repos,
+            new FixedClock(DateTime.UtcNow),
+            new FixedCurrentUser(ActorId),
+            RuleRepoFor(alert),
+            TestCoordinator());
 
         var result = await handler.HandleAsync(id, CancellationToken.None);
 
@@ -124,14 +157,26 @@ public sealed class ReopenAlertHandlerTests
         var id = Guid.NewGuid();
         var resolved = new Alert(id, Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow).Resolve(resAt, "r");
         var repos = new FakeAlertRepository { Stored = resolved };
-        var handler = new ReopenAlert.Handler(repos, new FixedClock(reopenAt), new FixedCurrentUser(ActorId));
+        var ruleRepo = RuleRepoFor(resolved);
+        var handler = new ReopenAlert.Handler(
+            repos,
+            new FixedClock(reopenAt),
+            new FixedCurrentUser(ActorId),
+            ruleRepo,
+            TestCoordinator());
 
         var first = await handler.HandleAsync(id, CancellationToken.None);
         Assert.NotNull(first);
         Assert.False(first.IsResolved);
         Assert.Equal(1, repos.UpdateCount);
 
-        var second = await handler.HandleAsync(id, CancellationToken.None);
+        var handler2 = new ReopenAlert.Handler(
+            repos,
+            new FixedClock(reopenAt),
+            new FixedCurrentUser(ActorId),
+            ruleRepo,
+            TestCoordinator());
+        var second = await handler2.HandleAsync(id, CancellationToken.None);
         Assert.NotNull(second);
         Assert.False(second.IsResolved);
         Assert.Equal(new DateTimeOffset(reopenAt, TimeSpan.Zero), second.ReopenedAtUtc);
@@ -148,7 +193,12 @@ public sealed class ReopenAlertHandlerTests
         var id = Guid.NewGuid();
         var resolved = new Alert(id, Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow).Acknowledge(ackAt, "acker").Resolve(resAt, "res");
         var repos = new FakeAlertRepository { Stored = resolved };
-        var handler = new ReopenAlert.Handler(repos, new FixedClock(reopenAt), new FixedCurrentUser(ActorId));
+        var handler = new ReopenAlert.Handler(
+            repos,
+            new FixedClock(reopenAt),
+            new FixedCurrentUser(ActorId),
+            RuleRepoFor(resolved),
+            TestCoordinator());
 
         var result = await handler.HandleAsync(id, CancellationToken.None);
 
@@ -168,7 +218,12 @@ public sealed class ReopenAlertHandlerTests
         var id = Guid.NewGuid();
         var resolved = new Alert(id, Guid.NewGuid(), Guid.NewGuid(), DateTime.UtcNow).Resolve(DateTime.UtcNow, "was-resolver");
         var repos = new FakeAlertRepository { Stored = resolved };
-        var handler = new ReopenAlert.Handler(repos, new FixedClock(DateTime.UtcNow), new FixedCurrentUser(ActorId));
+        var handler = new ReopenAlert.Handler(
+            repos,
+            new FixedClock(DateTime.UtcNow),
+            new FixedCurrentUser(ActorId),
+            RuleRepoFor(resolved),
+            TestCoordinator());
 
         var result = await handler.HandleAsync(id, CancellationToken.None);
 

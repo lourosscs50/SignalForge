@@ -1,5 +1,6 @@
 using SignalForge.Application.Queries;
 using SignalForge.Contracts;
+using SignalForge.Contracts.Automation;
 using SignalForge.Domain;
 
 namespace SignalForge.Application;
@@ -80,5 +81,23 @@ public interface IRuleEvaluator
 public interface ISignalEvaluationService
 {
     Task EvaluateAsync(Signal signal, CancellationToken cancellationToken = default);
+}
+
+/// <summary>Publishes normalized alert lifecycle truth after real transitions (infrastructure-agnostic).</summary>
+public interface IAlertLifecycleEventPublisher
+{
+    Task PublishAsync(AlertLifecycleEvent lifecycleEvent, CancellationToken cancellationToken = default);
+}
+
+/// <summary>Detection-side policy: whether a lifecycle event should produce an automation trigger request (no workflow identifiers).</summary>
+public interface IAlertAutomationPolicy
+{
+    bool ShouldRequestAutomationTrigger(AlertLifecycleEvent lifecycleEvent);
+}
+
+/// <summary>Publishes a normalized control trigger for external orchestrators (infrastructure-agnostic).</summary>
+public interface IControlAutomationTriggerPublisher
+{
+    Task PublishAsync(ControlAutomationTriggerRequest request, CancellationToken cancellationToken = default);
 }
 

@@ -1,4 +1,6 @@
 using SignalForge.Application;
+using SignalForge.Application.Automation;
+using SignalForge.Contracts.Automation;
 using SignalForge.Domain;
 
 namespace SignalForge.Application.Evaluation;
@@ -7,7 +9,8 @@ public sealed class SignalEvaluationService(
     IRuleRepository rules,
     IAlertRepository alerts,
     IDateTimeProvider clock,
-    IEnumerable<IRuleEvaluator> evaluators) : ISignalEvaluationService
+    IEnumerable<IRuleEvaluator> evaluators,
+    AlertLifecycleAutomationCoordinator lifecycleAutomation) : ISignalEvaluationService
 {
     public async Task EvaluateAsync(Signal signal, CancellationToken cancellationToken = default)
     {
@@ -22,13 +25,20 @@ public sealed class SignalEvaluationService(
             if (!evaluator.IsMatch(rule, signal))
                 continue;
 
+            var utcNow = clock.UtcNow;
             var alert = new Alert(
                 Id: Guid.NewGuid(),
                 SignalId: signal.Id,
                 RuleId: rule.Id,
-                CreatedAtUtc: clock.UtcNow);
+                CreatedAtUtc: utcNow);
 
             await alerts.AddAsync(alert, cancellationToken);
+            await lifecycleAutomation.NotifyRealTransitionAsync(
+                AlertLifecycleTransitionType.AlertCreated,
+                alert,
+                rule,
+                utcNow,
+                cancellationToken);
         }
     }
 }
