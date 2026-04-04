@@ -42,6 +42,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRuleAuditRepository, EfRuleAuditRepository>();
         services.AddScoped<ISignalRepository, EfSignalRepository>();
         services.AddScoped<IAlertRepository, EfAlertRepository>();
+        services.AddScoped<IDecisionRecordRepository, EfDecisionRecordRepository>();
 
         return services;
     }

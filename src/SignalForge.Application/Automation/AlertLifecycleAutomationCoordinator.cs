@@ -1,3 +1,4 @@
+using SignalForge.Application.Decisions;
 using SignalForge.Contracts.Automation;
 using SignalForge.Domain;
 
@@ -7,14 +8,16 @@ namespace SignalForge.Application.Automation;
 public sealed class AlertLifecycleAutomationCoordinator(
     IAlertLifecycleEventPublisher lifecyclePublisher,
     IAlertAutomationPolicy automationPolicy,
-    IControlAutomationTriggerPublisher triggerPublisher)
+    IControlAutomationTriggerPublisher triggerPublisher,
+    IDecisionObservationRecorder decisionObservationRecorder)
 {
     public async Task NotifyRealTransitionAsync(
         AlertLifecycleTransitionType transitionType,
         Alert alert,
         Rule? rule,
         DateTime occurredAtUtc,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        DecisionObservationContext? observationContext = null)
     {
         var evt = BuildEvent(transitionType, alert, rule, occurredAtUtc);
         await lifecyclePublisher.PublishAsync(evt, cancellationToken);
@@ -24,6 +27,8 @@ public sealed class AlertLifecycleAutomationCoordinator(
             var trigger = ControlAutomationTriggerMapper.ToTriggerRequest(evt);
             await triggerPublisher.PublishAsync(trigger, cancellationToken);
         }
+
+        await decisionObservationRecorder.RecordAsync(evt, rule, observationContext, cancellationToken);
     }
 
     private static AlertLifecycleEvent BuildEvent(

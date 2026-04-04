@@ -1,5 +1,6 @@
 using SignalForge.Application;
 using SignalForge.Application.Automation;
+using SignalForge.Application.Decisions;
 using SignalForge.Contracts.Automation;
 using SignalForge.Domain;
 
@@ -33,12 +34,16 @@ public sealed class SignalEvaluationService(
                 CreatedAtUtc: utcNow);
 
             await alerts.AddAsync(alert, cancellationToken);
+            var observation = new DecisionObservationContext(
+                EvaluatorStrategyKey: evaluator.GetType().Name,
+                InputSummary: SignalObservationSummaryFormatter.Format(signal));
             await lifecycleAutomation.NotifyRealTransitionAsync(
                 AlertLifecycleTransitionType.AlertCreated,
                 alert,
                 rule,
                 utcNow,
-                cancellationToken);
+                cancellationToken,
+                observation);
         }
     }
 }

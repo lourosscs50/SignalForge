@@ -25,3 +25,17 @@ public sealed record AlertListQuery(
     DateTime? ToCreatedUtc,
     bool? IsAcknowledged,
     bool? IsResolved);
+
+public sealed record DecisionListQuery(
+    int Page,
+    int PageSize,
+    string? DecisionCategory,
+    string? DecisionType,
+    string? Status,
+    DateTime? FromOccurredUtc,
+    DateTime? ToOccurredUtc,
+    Guid? CorrelationId,
+    string? TraceId,
+    Guid? ExecutionId,
+    Guid? RuleId,
+    string? PolicyProfileKey);

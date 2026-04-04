@@ -15,6 +15,7 @@ public sealed class SignalForgeDbContext : DbContext
     public DbSet<RuleAuditEntry> RuleAuditEntries => Set<RuleAuditEntry>();
     public DbSet<Signal> Signals => Set<Signal>();
     public DbSet<Alert> Alerts => Set<Alert>();
+    public DbSet<DecisionRecord> DecisionRecords => Set<DecisionRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

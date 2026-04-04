@@ -1,5 +1,6 @@
 using SignalForge.Application;
 using SignalForge.Application.Automation;
+using SignalForge.Application.Decisions;
 using SignalForge.Application.Queries;
 using SignalForge.Contracts;
 using SignalForge.Contracts.Automation;
@@ -52,6 +53,11 @@ internal static class AutomationTestHarness
     public static AlertLifecycleAutomationCoordinator CreateCoordinator(
         CapturingLifecyclePublisher life,
         CapturingTriggerPublisher trigger,
-        IAlertAutomationPolicy? policy = null) =>
-        new(life, policy ?? new DefaultAlertAutomationPolicy(), trigger);
+        IAlertAutomationPolicy? policy = null,
+        IDecisionObservationRecorder? decisionObservationRecorder = null) =>
+        new(
+            life,
+            policy ?? new DefaultAlertAutomationPolicy(),
+            trigger,
+            decisionObservationRecorder ?? NullDecisionObservationRecorder.Instance);
 }

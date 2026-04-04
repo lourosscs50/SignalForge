@@ -6,6 +6,7 @@ using SignalForge.Api.Endpoints;
 using SignalForge.Application;
 using SignalForge.Application.Evaluation;
 using SignalForge.Application.UseCases;
+using SignalForge.Application.Decisions;
 using SignalForge.Application.UseCases.Identity;
 using Microsoft.EntityFrameworkCore;
 using SignalForge.Infrastructure.Automation;
@@ -35,6 +36,7 @@ builder.Services.AddSingleton<IRuleEvaluator, SignalTypeEqualsRuleEvaluator>();
 builder.Services.AddSingleton<IRuleEvaluator, SignalTypeContainsRuleEvaluator>();
 builder.Services.AddSingleton<IRuleEvaluator, SignalValueGreaterThanRuleEvaluator>();
 builder.Services.AddScoped<ISignalEvaluationService, SignalEvaluationService>();
+builder.Services.AddScoped<IDecisionObservationRecorder, DecisionObservationRecorder>();
 
 // Use cases
 builder.Services.AddTransient<CreateRule.Handler>();
@@ -59,6 +61,9 @@ builder.Services.AddTransient<UnarchiveRule.Handler>();
 builder.Services.AddTransient<RegisterUser.Handler>();
 builder.Services.AddTransient<LoginUser.Handler>();
 builder.Services.AddTransient<GetCurrentUser.Handler>();
+builder.Services.AddTransient<GetDecisionVisibility.Handler>();
+builder.Services.AddTransient<ListDecisionVisibility.Handler>();
+builder.Services.AddTransient<GetDecisionVisibilityMetrics.Handler>();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -151,6 +156,7 @@ app.MapAuthEndpoints();
 app.MapSignalEndpoints();
 app.MapRuleEndpoints();
 app.MapAlertEndpoints();
+app.MapDecisionEndpoints();
 
 app.Run();
 

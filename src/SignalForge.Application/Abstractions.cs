@@ -39,6 +39,14 @@ public interface IAlertRepository
     Task<IReadOnlyList<Alert>> ListByRuleIdAsync(Guid ruleId, CancellationToken cancellationToken);
 }
 
+public interface IDecisionRecordRepository
+{
+    Task AddAsync(DecisionRecord record, CancellationToken cancellationToken);
+    Task<DecisionRecord?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+    Task<PagedResult<DecisionRecord>> ListPagedAsync(DecisionListQuery query, CancellationToken cancellationToken);
+    Task<IReadOnlyList<DecisionRecord>> ListAllAsync(CancellationToken cancellationToken);
+}
+
 // Identity/crypto abstractions (technical, not transport-specific).
 public interface IUserRepository
 {
