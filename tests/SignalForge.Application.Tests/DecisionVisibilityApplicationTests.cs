@@ -92,6 +92,9 @@ public sealed class DecisionVisibilityApplicationTests
         Assert.Equal(id, result.DecisionId);
         Assert.Equal(signalId, result.Trace.CorrelationId);
         Assert.Equal(alertId, result.Trace.ExecutionId);
+        Assert.Equal(signalId, result.Trace.SignalEntityId);
+        Assert.Equal(alertId, result.Trace.AlertEntityId);
+        Assert.Null(result.Trace.ChronoFlowExecutionInstanceId);
         Assert.Contains(alertId, result.Trace.RelatedEntityIds);
         Assert.True(result.Explanation.ExplanationAvailable);
         Assert.NotNull(result.Explanation.ReasonCodes);

@@ -13,11 +13,24 @@ public sealed record DecisionExplanationSummary(
     int? FallbackUsageCount,
     int? RetryUsageCount);
 
+/// <summary>
+/// Trace and correlation handles for operator visibility.
+/// <list type="bullet">
+/// <item><description><see cref="CorrelationId"/> — legacy JSON name; value is the SignalForge signal entity id (filter param).</description></item>
+/// <item><description><see cref="ExecutionId"/> — legacy JSON name; value is the SignalForge alert entity id (not ChronoFlow execution instance id).</description></item>
+/// <item><description><see cref="TraceId"/> — distributed trace thread id when propagated; often null.</description></item>
+/// <item><description><see cref="SignalEntityId"/> / <see cref="AlertEntityId"/> — additive explicit entity ids (prefer for new clients).</description></item>
+/// <item><description><see cref="ChronoFlowExecutionInstanceId"/> — reserved for peer execution instance id when wired; null until then.</description></item>
+/// </list>
+/// </summary>
 public sealed record DecisionTraceSummary(
     Guid? CorrelationId,
     Guid? ExecutionId,
     string? TraceId,
-    IReadOnlyList<Guid> RelatedEntityIds);
+    IReadOnlyList<Guid> RelatedEntityIds,
+    Guid? SignalEntityId = null,
+    Guid? AlertEntityId = null,
+    Guid? ChronoFlowExecutionInstanceId = null);
 
 public sealed record DecisionVisibilityResponse(
     Guid DecisionId,

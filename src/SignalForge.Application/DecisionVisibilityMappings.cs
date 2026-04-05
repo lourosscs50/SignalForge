@@ -20,7 +20,14 @@ public static class DecisionVisibilityMappings
             d.RetryUsageCount);
 
         var related = BuildRelatedIds(d);
-        var trace = new DecisionTraceSummary(d.CorrelationId, d.ExecutionId, d.TraceId, related);
+        var trace = new DecisionTraceSummary(
+            CorrelationId: d.CorrelationId,
+            ExecutionId: d.ExecutionId,
+            TraceId: d.TraceId,
+            RelatedEntityIds: related,
+            SignalEntityId: d.SignalId,
+            AlertEntityId: d.AlertId,
+            ChronoFlowExecutionInstanceId: null);
 
         return new DecisionVisibilityResponse(
             DecisionId: d.Id,
