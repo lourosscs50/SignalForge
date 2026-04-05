@@ -95,6 +95,8 @@ public sealed class DecisionVisibilityApplicationTests
         Assert.Equal(signalId, result.Trace.SignalEntityId);
         Assert.Equal(alertId, result.Trace.AlertEntityId);
         Assert.Null(result.Trace.ChronoFlowExecutionInstanceId);
+        Assert.Null(result.SelectedOptionId);
+        Assert.Null(result.DecisionOptions);
         Assert.Contains(alertId, result.Trace.RelatedEntityIds);
         Assert.True(result.Explanation.ExplanationAvailable);
         Assert.NotNull(result.Explanation.ReasonCodes);
@@ -137,6 +139,51 @@ public sealed class DecisionVisibilityApplicationTests
             CancellationToken.None);
         Assert.Single(byCorr.Items);
         Assert.Equal(s1, byCorr.Items[0].Trace.CorrelationId);
+    }
+
+    [Fact]
+    public void ToVisibilityResponse_maps_selected_option_decision_options_and_chrono_when_on_record()
+    {
+        var id = Guid.NewGuid();
+        var signalId = Guid.NewGuid();
+        var alertId = Guid.NewGuid();
+        var chrono = Guid.NewGuid();
+        var record = Sample(id, signalId, alertId) with
+        {
+            SelectedOptionId = "option-b",
+            DecisionOptions =
+            [
+                new DecisionOptionSnapshot("option-a", "First", 0),
+                new DecisionOptionSnapshot("option-b", "Second", 1),
+            ],
+            ChronoFlowExecutionInstanceId = chrono,
+        };
+
+        var mapped = DecisionVisibilityMappings.ToVisibilityResponse(record);
+
+        Assert.Equal("option-b", mapped.SelectedOptionId);
+        Assert.NotNull(mapped.DecisionOptions);
+        Assert.Equal(2, mapped.DecisionOptions.Count);
+        Assert.Equal("option-a", mapped.DecisionOptions[0].OptionId);
+        Assert.Equal(0, mapped.DecisionOptions[0].Ordinal);
+        Assert.Equal("option-b", mapped.DecisionOptions[1].OptionId);
+        Assert.Equal(chrono, mapped.Trace.ChronoFlowExecutionInstanceId);
+    }
+
+    [Fact]
+    public void ToVisibilityResponse_maps_empty_selected_to_null_and_skips_empty_option_lists()
+    {
+        var id = Guid.NewGuid();
+        var record = Sample(id, Guid.NewGuid(), Guid.NewGuid()) with
+        {
+            SelectedOptionId = "   ",
+            DecisionOptions = [],
+        };
+
+        var mapped = DecisionVisibilityMappings.ToVisibilityResponse(record);
+
+        Assert.Null(mapped.SelectedOptionId);
+        Assert.Null(mapped.DecisionOptions);
     }
 
     [Fact]

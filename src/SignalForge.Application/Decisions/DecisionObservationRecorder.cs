@@ -48,6 +48,9 @@ public sealed class DecisionObservationRecorder(
             ? "SignalForge.BuiltinRulesEngine"
             : null;
 
+        var (selectedOptionId, decisionOptions, chronoFlowExecutionInstanceId) =
+            NormalizeAdditiveObservationFields(context);
+
         return new DecisionRecord(
             Id: Guid.NewGuid(),
             OccurredAtUtc: occurred,
@@ -71,7 +74,56 @@ public sealed class DecisionObservationRecorder(
             FallbackUsageCount: null,
             RetryUsageCount: null,
             RecommendedActionSummary: Truncate(recommended, MaxSummaryLength),
-            AuditActorUserId: Truncate(ActorFrom(evt), 256));
+            AuditActorUserId: Truncate(ActorFrom(evt), 256),
+            SelectedOptionId: selectedOptionId,
+            DecisionOptions: decisionOptions,
+            ChronoFlowExecutionInstanceId: chronoFlowExecutionInstanceId);
+    }
+
+    private const int MaxDecisionOptions = 64;
+    private const int MaxOptionSummaryLength = 1024;
+    private const int MaxSelectedOptionIdLength = 256;
+
+    /// <summary>
+    /// Copies explicit observation fields only — no correlation heuristics or defaults.
+    /// </summary>
+    private static (string? SelectedOptionId, IReadOnlyList<DecisionOptionSnapshot>? DecisionOptions, Guid? ChronoFlowExecutionInstanceId)
+        NormalizeAdditiveObservationFields(DecisionObservationContext? context)
+    {
+        if (context is null)
+            return (null, null, null);
+
+        var chrono = context.ChronoFlowExecutionInstanceId;
+
+        var selected = Truncate(context.SelectedOptionId?.Trim(), MaxSelectedOptionIdLength);
+        if (selected is { Length: 0 })
+            selected = null;
+
+        if (context.DecisionOptions is null || context.DecisionOptions.Count == 0)
+            return (selected, null, chrono);
+
+        var ordered = context.DecisionOptions
+            .OrderBy(o => o.Ordinal)
+            .ThenBy(o => o.OptionId, StringComparer.Ordinal)
+            .Take(MaxDecisionOptions)
+            .Select(o => new DecisionOptionSnapshot(
+                OptionId: Truncate(o.OptionId.Trim(), MaxSelectedOptionIdLength) ?? string.Empty,
+                Summary: Truncate(o.Summary?.Trim(), MaxOptionSummaryLength),
+                Ordinal: o.Ordinal))
+            .Where(o => o.OptionId.Length > 0)
+            .ToList();
+
+        // Deterministic de-duplication by option id (first row wins after sort).
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var deduped = new List<DecisionOptionSnapshot>(ordered.Count);
+        foreach (var row in ordered)
+        {
+            if (!seen.Add(row.OptionId))
+                continue;
+            deduped.Add(row);
+        }
+
+        return (selected, deduped.Count == 0 ? null : deduped, chrono);
     }
 
     private static string MapDecisionType(AlertLifecycleTransitionType t) => t switch

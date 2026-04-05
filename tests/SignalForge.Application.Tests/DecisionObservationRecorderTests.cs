@@ -82,6 +82,9 @@ public sealed class DecisionObservationRecorderTests
         Assert.True(repo.Last.ExplanationAvailable);
         Assert.DoesNotContain("prompt", repo.Last.ExplanationSummary, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(1024, repo.Last.InputSummary!.Length);
+        Assert.Null(repo.Last.SelectedOptionId);
+        Assert.Null(repo.Last.DecisionOptions);
+        Assert.Null(repo.Last.ChronoFlowExecutionInstanceId);
     }
 
     [Fact]
@@ -116,5 +119,60 @@ public sealed class DecisionObservationRecorderTests
 
         Assert.Equal("user-42", repo.Last!.AuditActorUserId);
         Assert.Equal(DecisionVisibilityKeys.Types.AlertAcknowledged, repo.Last.DecisionType);
+        Assert.Null(repo.Last.SelectedOptionId);
+        Assert.Null(repo.Last.DecisionOptions);
+        Assert.Null(repo.Last.ChronoFlowExecutionInstanceId);
+    }
+
+    [Fact]
+    public async Task RecordAsync_persists_explicit_context_options_selected_option_and_chrono_id_only()
+    {
+        var repo = new CapturingDecisionRepo();
+        var clock = new FixedClock(new DateTime(2026, 4, 5, 0, 0, 0, DateTimeKind.Utc));
+        var recorder = new DecisionObservationRecorder(repo, clock);
+        var ruleId = Guid.NewGuid();
+        var signalId = Guid.NewGuid();
+        var alertId = Guid.NewGuid();
+        var chronoId = Guid.NewGuid();
+
+        var evt = new AlertLifecycleEvent(
+            AlertLifecycleTransitionType.AlertCreated,
+            alertId,
+            ruleId,
+            signalId,
+            new DateTimeOffset(clock.UtcNow, TimeSpan.Zero),
+            "Open",
+            false,
+            false,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "R");
+
+        await recorder.RecordAsync(
+            evt,
+            null,
+            new DecisionObservationContext(
+                SelectedOptionId: "opt-b",
+                DecisionOptions:
+                [
+                    new DecisionOptionSnapshot("opt-b", "B wins", 1),
+                    new DecisionOptionSnapshot("opt-a", "A", 0),
+                    new DecisionOptionSnapshot("opt-b", "duplicate ignored", 2),
+                ],
+                ChronoFlowExecutionInstanceId: chronoId),
+            CancellationToken.None);
+
+        Assert.NotNull(repo.Last);
+        Assert.Equal("opt-b", repo.Last!.SelectedOptionId);
+        Assert.Equal(chronoId, repo.Last.ChronoFlowExecutionInstanceId);
+        Assert.NotNull(repo.Last.DecisionOptions);
+        Assert.Equal(2, repo.Last.DecisionOptions.Count);
+        Assert.Equal("opt-a", repo.Last.DecisionOptions[0].OptionId);
+        Assert.Equal("opt-b", repo.Last.DecisionOptions[1].OptionId);
+        Assert.Equal("B wins", repo.Last.DecisionOptions[1].Summary);
     }
 }

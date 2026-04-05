@@ -75,6 +75,8 @@ public sealed class DecisionVisibilityApiTests
         Assert.Equal(signalId, traceEl.GetProperty("signalEntityId").GetGuid());
         Assert.Equal(alertEntity, traceEl.GetProperty("alertEntityId").GetGuid());
         Assert.Equal(JsonValueKind.Null, traceEl.GetProperty("chronoFlowExecutionInstanceId").ValueKind);
+        Assert.Equal(JsonValueKind.Null, row.GetProperty("selectedOptionId").ValueKind);
+        Assert.Equal(JsonValueKind.Null, row.GetProperty("decisionOptions").ValueKind);
         Assert.True(row.GetProperty("explanation").GetProperty("explanationAvailable").GetBoolean());
 
         foreach (var p in row.EnumerateObject())

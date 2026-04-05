@@ -1,3 +1,4 @@
+using System.Linq;
 using SignalForge.Application.Decisions;
 using SignalForge.Contracts;
 using SignalForge.Contracts.Decisions;
@@ -27,7 +28,7 @@ public static class DecisionVisibilityMappings
             RelatedEntityIds: related,
             SignalEntityId: d.SignalId,
             AlertEntityId: d.AlertId,
-            ChronoFlowExecutionInstanceId: null);
+            ChronoFlowExecutionInstanceId: d.ChronoFlowExecutionInstanceId);
 
         return new DecisionVisibilityResponse(
             DecisionId: d.Id,
@@ -43,7 +44,29 @@ public static class DecisionVisibilityMappings
             Explanation: explanation,
             RecommendedDownstreamSummary: d.RecommendedActionSummary,
             AuditActorUserId: d.AuditActorUserId,
+            SelectedOptionId: NormalizeSelectedOptionId(d.SelectedOptionId),
+            DecisionOptions: MapDecisionOptions(d),
             Trace: trace);
+    }
+
+    private static string? NormalizeSelectedOptionId(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return null;
+        var t = value.Trim();
+        return t.Length == 0 ? null : t;
+    }
+
+    private static IReadOnlyList<DecisionOptionSummary>? MapDecisionOptions(DecisionRecord d)
+    {
+        if (d.DecisionOptions is null || d.DecisionOptions.Count == 0)
+            return null;
+
+        return d.DecisionOptions
+            .OrderBy(o => o.Ordinal)
+            .ThenBy(o => o.OptionId, StringComparer.Ordinal)
+            .Select(o => new DecisionOptionSummary(o.OptionId, o.Summary, o.Ordinal))
+            .ToList();
     }
 
     public static PagedResult<DecisionVisibilityResponse> ToVisibilityPage(PagedResult<DecisionRecord> page)

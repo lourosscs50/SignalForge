@@ -4,6 +4,9 @@ public sealed record DecisionInputSummary(string NormalizedSummary);
 
 public sealed record DecisionOutputSummary(string ResultSummary);
 
+/// <summary>Operator-safe option row for visibility consumers; order is explicit via <see cref="Ordinal"/>.</summary>
+public sealed record DecisionOptionSummary(string OptionId, string? Summary, int Ordinal);
+
 /// <summary>Bounded, operator-safe explanation surface (no hidden chain-of-thought).</summary>
 public sealed record DecisionExplanationSummary(
     bool ExplanationAvailable,
@@ -46,6 +49,10 @@ public sealed record DecisionVisibilityResponse(
     DecisionExplanationSummary Explanation,
     string? RecommendedDownstreamSummary,
     string? AuditActorUserId,
+    /// <summary>Winning option id when persisted; null when unknown or not applicable.</summary>
+    string? SelectedOptionId,
+    /// <summary>Considered options when persisted; null when absent.</summary>
+    IReadOnlyList<DecisionOptionSummary>? DecisionOptions,
     DecisionTraceSummary Trace);
 
 public sealed record DecisionTypeCountRow(string DecisionType, int Count);
